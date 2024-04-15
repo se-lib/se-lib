@@ -1,5 +1,7 @@
 # Cost Models
 
+A suite of open source parametric cost models.
+
 # Constructive Systems Engineering Cost Model (COSYSMO)
 
 Use COSYSMO per the following to provide size and cost factor inputs, compute effort and decompose it by activity.
