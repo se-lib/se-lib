@@ -1,9 +1,8 @@
 # Cost Models
 
-# cosysmo
-se-lib Constructive Systems Engineering Cost Model (COSYSMO)
+# Constructive Systems Engineering Cost Model (COSYSMO)
 
-Use per the following.
+Use COSYSMO per the following.
 
 ```python
 # test case
