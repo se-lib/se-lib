@@ -2,7 +2,7 @@
 
 # Constructive Systems Engineering Cost Model (COSYSMO)
 
-Use COSYSMO per the following to provide size and cost factor inputs, compute effort and its phase distribution.
+Use COSYSMO per the following to provide size and cost factor inputs, compute effort and decompose it by activity.
 
 ```python
 # test case
