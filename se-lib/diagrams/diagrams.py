@@ -1,7 +1,7 @@
 """
-se-lib Version .26.7
+se-lib Version .28.5
 
-Copyright (c) 2022-2023 Ray Madachy
+Copyright (c) 2022-2024 se-lib Development Team
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
@@ -12,6 +12,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 import graphviz
 import textwrap
+import fileinput
 import os
 import sys
 from os.path import exists
@@ -26,6 +27,8 @@ from copy import deepcopy
 import simpy
 import random
 import numpy as np
+
+from IPython.display import SVG, display
 
 online = False
 
@@ -475,11 +478,13 @@ def fault_tree_diagram(ft, filename=None, format='svg'):
 
     """
     verbose = False
+    if 'google.colab' in str(get_ipython()): online = True
+    if online and filename==None: filename="ft_temp"
     wrap_width = 15
     def wrap(text): return textwrap.fill(
         text, width=wrap_width, break_long_words=False).replace("\n", "<BR/>")
     node_attr = {'color': 'black', 'fontsize': '11',
-                 'shape': 'plaintext'}  # 'fontname': 'arial',
+                 'shape': 'none'}  # 'fontname': 'arial',
     edge_attr = {'arrowtail': 'none', 'arrowsize': '0', 'dir': 'both', 'penwidth': '2', 'fontname': 'arial', 'fontsize': '11', } #https://graphviz.org/docs/attr-types/arrowType/
     fault_tree = graphviz.Digraph('G', filename=filename, node_attr=node_attr,
                                 edge_attr=edge_attr, engine="dot", format=format)
@@ -598,12 +603,12 @@ def fault_tree_diagram(ft, filename=None, format='svg'):
             </table>
             </td>
               </tr>
-              <tr>
+                <tr>
                 <td port="{node_type}"><img src="AND_node.svg"/></td>
               </tr>
-              <tr>
+             <tr>
                 <td><img src="OR_node_bottom.svg"/></td>
-              </tr>
+                </tr>
             </table>>''')
         if verbose: print("Leaves")
         for leaf in leafs:
@@ -613,7 +618,14 @@ def fault_tree_diagram(ft, filename=None, format='svg'):
     if filename != None:
         fault_tree.render()
 
-    return fault_tree
+    if online:
+        with fileinput.FileInput(f"{filename}.svg", inplace=True, backup='.bak') as file:
+            for line in file:
+                print(line.replace('href="', 'href="https://raw.githubusercontent.com/se-lib/se-lib/main/docs/figures/'), end='')
+
+        display(SVG(f"{filename}.svg"))
+    else:
+        return fault_tree
 
 def read_fault_tree_excel(filename):
     df = pd.read_excel(filename,
