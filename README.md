@@ -1,5 +1,5 @@
 # Systems Engineering Library (se-lib)
-Version .26.6
+Version .28.5
 
 Copyright (c) 2022-2024 se-lib Development Team
 
