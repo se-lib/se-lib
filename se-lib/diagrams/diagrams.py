@@ -1,5 +1,5 @@
 """
-se-lib Version .28.5
+se-lib Version .28.6
 
 Copyright (c) 2022-2024 se-lib Development Team
 
@@ -478,8 +478,11 @@ def fault_tree_diagram(ft, filename=None, format='svg'):
 
     """
     verbose = False
+    online = False
+    
     if 'google.colab' in str(get_ipython()): online = True
     if online and filename==None: filename="ft_temp"
+    
     wrap_width = 15
     def wrap(text): return textwrap.fill(
         text, width=wrap_width, break_long_words=False).replace("\n", "<BR/>")
