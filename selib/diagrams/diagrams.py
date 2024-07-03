@@ -1,5 +1,5 @@
 """
-se-lib Version .28.6
+se-lib Version .30.0
 
 Copyright (c) 2022-2024 se-lib Development Team
 
@@ -1406,3 +1406,22 @@ def mocus(fault_tree):
     if verbose: print(f'***{css=}') # rm
     ft = copy
     return(css)
+
+def causal_diagram(relationships, filename=None, format='svg'):
+    dot_text= """
+    digraph G {
+  	node [color=black fontsize=11 shape=plain style=rounded]
+  	edge [len=1 color=blue labeldistance = 1.5 arrowsize=.5 fontname=arial fontsize=11]
+  	margin=0
+  	splines=curved
+    """
+    
+    for relation in relationships:
+    	head_name = textwrap.fill(relation[0], width=15, break_long_words=False)
+    	tail_name = textwrap.fill(relation[1], width=15, break_long_words=False)
+    	polarity_label = f"< <TABLE border='0' cellpadding='0'><TR><TD><B>{relation[2]}</B></TD></TR> </TABLE>>"
+    	dot_text += f""" "{head_name}" -> "{tail_name}" [headlabel = {polarity_label}] """
+    dot_text += "}"
+    src = graphviz.Source(dot_text, engine="neato", filename=filename, format=format)
+    src.render()
+    return(src)
