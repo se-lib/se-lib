@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 [project]
 name = "se-lib"
-version = "0.32.0"
+version = "0.33.0"
 authors = [
   { name="se-lib Development Team", email="info@se-lib.org" },
 ]
@@ -22,7 +22,6 @@ dependencies = [
     "pandas",
     "graphviz",
     "pysd",
-    "netCDF4",
     "simpy",
     "ipython",
 ]
@@ -32,6 +31,6 @@ pandas = "^2.0.0"
 graphviz = "^0.20.1"
 pysd = "^3.9.1"
 netCDF4 = "^1.6.3"
-simpy = "^4.0.1"
+simpy = "^4.1.1"
 [project.urls]
 "Homepage" = "http://se-lib.org"
