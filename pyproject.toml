@@ -26,5 +26,12 @@ dependencies = [
     "simpy",
     "ipython",
 ]
+[tool.poetry.dependencies]
+matplotlib = "^3.7.1"
+pandas = "^2.0.0"
+graphviz = "^0.20.1"
+pysd = "^3.9.1"
+netCDF4 = "^1.6.3"
+simpy = "^4.0.1"
 [project.urls]
 "Homepage" = "http://se-lib.org"
