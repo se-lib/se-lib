@@ -1,21 +1,21 @@
 def cosysmo(size_drivers, cost_factors):
     return .254 * eaf(cost_factors) *total_size(size_drivers)**1.06
-	
+
 def eaf(ratings_dict):
-    eaf_value = 1.0
-    
+    effort_adjustment_factor = 1.0
+
     for cost_factor, rating_values in cost_factors_dict.items():
         # Get the rating from the ratings_dict or default to 'Nominal' if not provided
         rating = ratings_dict.get(cost_factor, "Nominal")
-        
+
         # Retrieve the effort multiplier for the rating
         multiplier = rating_values.get(rating, 1.0)  # default to 1.0 if the rating doesn't exist for some reason
-        
-        # Multiply the eaf_value by the multiplier
-        eaf_value *= multiplier
-        
-    return eaf_value
-	
+
+        # Multiply EAF by each effort multiplier
+        effort_adjustment_factor *= multiplier
+
+    return effort_adjustment_factor
+
 cost_factors_dict = {
     "Requirements Understanding": {"Very_Low": 1.87, "Low": 1.37, "Nominal": 1.00, "High": 0.77, "Very_High": 0.60},
     "Architecture Understanding": {"Very_Low": 1.64, "Low": 1.28, "Nominal": 1.00, "High": 0.81, "Very_High": 0.65},
@@ -36,24 +36,18 @@ cost_factors_dict = {
 def phase_effort(effort):
     # Define the effort distribution percentages for each activity
     activity_percentages = {
-        "Acquisition and Supply": 7/100,
-        "Technical Management": 17/100,
-        "System Design": 30/100,
-        "Product Realization": 15/100,
-        "Technical Evaluation": 31/100
+        "Acquisition and Supply": .07,
+        "Technical Management": .17,
+        "System Design": .30,
+        "Product Realization": .15,
+        "Technical Evaluation": .31
     }
-    
+
     # Calculate the sub-effort for each activity based on its percentage
     sub_efforts = {activity: effort * percentage for activity, percentage in activity_percentages.items()}
-    
-    # Print the table of the effort outputs
-    print(f"{'Activities':<25} {'Effort':<10}")
-    print("-" * 35)
-    for activity, sub_effort in sub_efforts.items():
-        print(f"{activity:<25} {sub_effort:.2f}")
-    
+
     return sub_efforts
-	
+
 size_weights = {
     "System Requirements": {
         "Easy": 0.5,
@@ -83,21 +77,8 @@ def total_size(driver_counts):
         for complexity, count in complexities.items():
             total += count * size_weights[driver][complexity]
     return total
-	
-def compute_effort():
-    size_drivers = {
-        driver: {complexity: float(boxes[driver][complexity].get()) for complexity in complexities}
-        for driver in size_weights
-    }
 
-    cost_factors_ratings = {
-        factor: factor_comboboxes[factor].get()
-        for factor in cost_factors_dict
-    }
-
-    effort = cosysmo(size_drivers, cost_factors_ratings)
-
-# test case
+""" example usage 
 size_drivers = {
     "System Requirements": {
         "Easy": 12,
@@ -126,3 +107,14 @@ cost_factors = {
     "Technology Risk": "High",
     "Process Capability": "High"
 }
+
+effort = cosysmo(size_drivers, cost_factors)
+print(f'Effort = {effort:.1f} Person-Months')
+
+# work breakdown structure
+wbs = phase_effort(effort)
+print(f"{'Activities':<25} {'Effort':<10}")
+print("-" * 35)
+for activity, sub_effort in sub_efforts.items():
+    print(f"{activity:<25} {sub_effort:.2f}")
+"""
