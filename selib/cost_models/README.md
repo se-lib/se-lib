@@ -40,7 +40,12 @@ cost_factors = {
 effort = cosysmo(size_drivers, cost_factors)
 print(f'Effort = {effort:.1f} Person-Months')
 
-phase_effort(effort)
+# work breakdown structure
+wbs = phase_effort(effort)
+print(f"{'Activities':<25} {'Effort':<10}")
+print("-" * 35)
+for activity, effort in wbs.items():
+    print(f"{activity:<25} {effort:.2f}")
 ```
 
 ```
