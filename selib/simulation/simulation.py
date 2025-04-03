@@ -1,7 +1,7 @@
 """
-se-lib Version .26.7
+se-lib Version .35
 
-Copyright (c) 2022-2023 Ray Madachy
+Copyright (c) 2022-2025 se-lib Development Team
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
@@ -20,8 +20,6 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 mpl.rcParams['axes.spines.top'] = False
 mpl.rcParams['axes.spines.right'] = False
-
-from copy import deepcopy
 
 import simpy
 import random
@@ -45,7 +43,7 @@ def init_sd_model(start, stop, dt):
             <options>
                 <uses_outputs/>
             </options>
-            <product version="1.0">PyML .20 dev</product>
+            <product version=".35">se-lib</product>
         </header>"""
 
   model_specs = f"""
@@ -71,15 +69,15 @@ def build_model():
   xmile_string = xmile_header + model_specs + model_string + xmile_closing
   with open('test.xmile', 'w') as f:
     f.write(xmile_string)
-    
+
 def add_stock(name, initial, inflows=[], outflows=[]):
   """
   Adds a stock to the model
-    
+
   Parameters
   ----------
   name: str
-    The name of the stock 
+    The name of the stock
   initial: float
     Initial value of stock at start of simulation
   inflows: list of float
@@ -102,7 +100,7 @@ def add_stock(name, initial, inflows=[], outflows=[]):
                 </stock>"""
   build_model()
   model_dict['stocks'][name]={'inflows': inflows, 'outflows': outflows}
-  
+
 def add_auxiliary(name, equation, inputs=[]):
   """
   Adds auxiliary equation or constant to the model
@@ -110,13 +108,13 @@ def add_auxiliary(name, equation, inputs=[]):
   Parameters
   ----------
   name: str
-    The name of the auxiliary 
+    The name of the auxiliary
   equation: str
     Equation for the auxiliary using other named model variables
   inputs: list
-    Optional list of variable input names used to draw model diagram 
+    Optional list of variable input names used to draw model diagram
   """
-  if "random()" in str(equation): equation = convert_random_to_xmile(equation) 
+  if "random()" in str(equation): equation = convert_random_to_xmile(equation)
   if "random.uniform(" in str(equation): equation = convert_random_to_xmile(equation)
   if "RANDOM" in str(equation): equation = equation.replace("RANDOM", '(GET_TIME_VALUE(0,0,0) + .00001) / (GET_TIME_VALUE(0,0,0) + .00001) * RANDOM')
   global model
@@ -127,7 +125,44 @@ def add_auxiliary(name, equation, inputs=[]):
                 </aux>"""
   build_model()
   model_dict['auxiliaries'][name]={'equation': equation, 'inputs': inputs}
-    
+
+def add_auxiliary_lookup(name, input, xpoints, ypoints, inputs=[]):
+  """
+  Adds auxiliary lookup table or graph to the model
+
+  Parameters
+  ----------
+  name: str
+    The name of the auxiliary lookup
+  input: str
+    Input for the lookup function as the x-value which may be a constant, model variable or equation
+  xpoints: str
+    list of x points for the lookup function
+  ypoints: str
+    list of y points for the lookup function
+  inputs: list
+    Optional list of variable input names used to draw model diagram
+  """
+  global model
+  xpoint_string = ",".join(str(x) for x in xpoints)
+  ypoint_string = ",".join(str(y) for y in ypoints)
+  model += f"""
+                <aux name="{name}">
+                    <eqn>{input}</eqn>
+                    <units>Fraction</units>
+                    <doc>{name}</doc>
+                    <gf>
+                    <xpts>
+                    {xpoint_string}
+                    </xpts>
+                    <ypts>
+                    {ypoint_string}
+                    </ypts>
+                    </gf>
+                </aux>"""
+  build_model()
+  model_dict['auxiliaries'][name]={'input': input, 'xpoints': xpoints, 'ypoints': ypoints, 'inputs': inputs}
+
 def add_flow(name, equation, inputs=[]):
 	"""
 	Adds a flow to the model
@@ -135,13 +170,13 @@ def add_flow(name, equation, inputs=[]):
 	Parameters
 	----------
 	name: str
-	  The name of the flow 
+	  The name of the flow
 	equation: str
 	  Equation for the flow using other named model variables
 	inputs: list
-	  Optional list of variable input names used to draw model diagram 
+	  Optional list of variable input names used to draw model diagram
 	"""
-	if "random()" in str(equation): equation = convert_random_to_xmile(equation) 
+	if "random()" in str(equation): equation = convert_random_to_xmile(equation)
 	if "random.uniform(" in str(equation): equation = convert_random_to_xmile(equation)
 	if "RANDOM" in str(equation): equation = equation.replace("RANDOM", '(GET_TIME_VALUE(0,0,0) + .00001) / (GET_TIME_VALUE(0,0,0) + .00001) * RANDOM')
 	global model
@@ -152,7 +187,7 @@ def add_flow(name, equation, inputs=[]):
 				</flow>"""
 	build_model()
 	model_dict['flows'][name]={'equation': equation, 'inputs': inputs}
-	
+
 
 def convert_random_to_xmile(equation):
   equation = equation.replace("random(", "RANDOM_0_1(")
@@ -186,10 +221,10 @@ def plot_graph(*outputs):
 		if type(var) == list:
 			axis.plot(output.index, output[var].values, label=var)
 			axis.legend(loc="best", )
-		else: 
+		else:
 			axis.plot(output.index, output[var].values)
 		plt.show()
-  
+
 def save_graph(*outputs, filename="graph.png"):
   """
   save graph to file
@@ -211,14 +246,14 @@ def save_graph(*outputs, filename="graph.png"):
     if type(var) == list:
         axis.plot(output.index, output[var].values, label=var)
         axis.legend(loc="best", )
-    else: 
+    else:
         axis.plot(output.index, output[var].values)
     plt.savefig(filename)
-            
+
 def run_model(verbose=True):
 	"""
 	Executes the current model
-    
+
 	Returns
 	----------
 	If continuous, returns 1) Pandas dataframe containing run outputs for each variable each timestep and 2) model dictionary.
@@ -228,10 +263,20 @@ def run_model(verbose=True):
 	if (model_type == "continuous"): return(run_sd_model())
 	if (model_type == "discrete"): return(run_de_model(verbose))
 
+def get_model_structure():
+    """
+    Provides model structure
+    
+    Returns
+    ----------
+    Model structure dictionary
+    """
+    return (model_dict)
+
 def run_sd_model():
     """
     Executes the model
-    
+
     Returns
     ----------
     Pandas dataframe containing run outputs for each variable each timestep
@@ -241,89 +286,145 @@ def run_sd_model():
     global model
     model = pysd.read_xmile('./test.xmile')
     output = model.run(progress=False)
-    return (output, model_dict)
-    
+
+    # Conditionally display in notebooks
+    try:
+        from IPython.display import display
+        display(output)
+        return None # or None
+    except Exception:
+        pass  # Not in an IPython notebook or display() unavailable
+
+    return (output)
+
 def set_logical_run_time(condition):
     """
-    Enables a run time to be measured based on a logical condition for when the simulation should be run (like a while statement).  The logical end time will be available from the 'get_logical_end_time()' function in lieu of the fixed end time for a simulation. 
+    Enables a run time to be measured based on a logical condition for when the simulation should be run (like a while statement).  The logical end time will be available from the 'get_logical_end_time()' function in lieu of the fixed end time for a simulation.
     """
+    if "<" in str(condition): condition = condition.replace("<", "&lt;")
     add_flow("time_flow", 'if_then_else('+str(condition)+', 1, 0)')
     #add_flow("time_flow", 'if_then_else(not '+str(condition)+', 1, 0)')
     #add_flow("time_flow", 'if_then_else('+condition+', 0, 1)')
     add_stock("logical_end_time", 0, inflows=["time_flow"])
-    
+
 def get_logical_end_time():
     """
-    Returns the logical end time as specified in a previous 'set_logical_run_time()' function call, in lieu of the fixed end time for a simulation. 
-    
+    Returns the logical end time as specified in a previous 'set_logical_run_time()' function call, in lieu of the fixed end time for a simulation.
+
     Returns
     ----------
     logical_end_time: float
         end time when the 'set_logical_run_time()'' condition expires
     """
-    return (get_final_value("logical_end_time"))  
-    
+    return (get_final_value("logical_end_time"))
+
 def get_final_value(variable):
-    return (output[variable][model['FINAL TIME']]) 
-	
-	
-	
+    return (output[variable][model['FINAL TIME']])
+
+
+
 def draw_sd_model(filename=None, format='svg'):
     system_dynamics_dict = model_dict
     graph = graphviz.Digraph(engine='dot', filename=filename, format=format)
     graph.attr(rankdir='LR', size='10,8', splines='spline',)
     graph.attr('node', fontname="arial", fontcolor='blue', color='invis', fontsize='10')
     #graph.attr('edge',  minlen='1')
-    
-    
+
+
     with graph.subgraph(name='cluster_flowchain') as c:
         # Add stocks as boxes
         for stock_name in system_dynamics_dict['stocks']:
             graph.node(stock_name, shape='box', color='blue', )
-        
+
         # Add flows as circles
         for flow_name in system_dynamics_dict['flows']:
             graph.node(flow_name, shape='circle', color='blue', width='.2', fixedsize="true" , label=f"\n\n{flow_name}")
-        
+
     # Add auxiliaries as circles
     for aux_name in system_dynamics_dict['auxiliaries']:
         graph.node(aux_name, shape='circle', color='blue', width='.2', fixedsize="true", label=f"\n\n{aux_name}")
-    
+
     # Add edges from inflows to stocks
     for stock_name, stock_dict in system_dynamics_dict['stocks'].items():
         for inflow_name in stock_dict['inflows']:
             graph.edge(inflow_name, stock_name, color="blue:blue", arrowhead="onormal")
             if inflow_name not in stock_dict['outflows']:
-                graph.node(f'{inflow_name}_source', width=".01", fontsize='14', fixedsize="true", label="✽")
-                graph.edge(f'{inflow_name}_source', inflow_name, tailclip="true", color="blue:blue", arrowhead="none")
-    
+                # draw source if not an outflow of any other stock
+                if not is_outflow_of_stock(model_dict, inflow_name):
+                    graph.node(f'{inflow_name}_source', width=".01", fontsize='14', fixedsize="true", label="✽")
+                    graph.edge(f'{inflow_name}_source', inflow_name, tailclip="true", color="blue:blue", arrowhead="none")
+
     # Add edges from stocks to outflows
     for stock_name, stock_dict in system_dynamics_dict['stocks'].items():
         for outflow_name in stock_dict['outflows']:
             graph.edge(stock_name, outflow_name, color="blue:blue", arrowhead="none")
             if outflow_name not in stock_dict['inflows']:
-                graph.node(f'{outflow_name}_sink', width=".01", fontsize='14', fixedsize="true", label="✽")
-                graph.edge(outflow_name, f'{outflow_name}_sink', headclip="true", color="blue:blue", arrowhead="onormal")
+                # draw sink if not an inflow of any other stock
+                if not is_inflow_of_stock(model_dict, outflow_name):
+                    graph.node(f'{outflow_name}_sink', width=".01", fontsize='14', fixedsize="true", label="✽")
+                    graph.edge(outflow_name, f'{outflow_name}_sink', headclip="true", color="blue:blue", arrowhead="onormal")
 
     # Add edges from variable inputs to flows
     for flow_name, flow_dict in system_dynamics_dict['flows'].items():
         for input_name in flow_dict['inputs']:
             graph.edge(input_name, flow_name, color="red", arrowhead="normal", constraint='false')
- 
-           
+
+
     # Add edges from variable inputs to auxiliaries
     for aux_name, aux_dict in system_dynamics_dict['auxiliaries'].items():
         for input_name in aux_dict['inputs']:
             graph.edge(input_name, aux_name, color="red", arrowhead="normal", constraint='false')
-    
+
     if filename is not None:
         graph.render()  # render and save file, clean up temporary dot source file (no extension) after successful rendering with (cleanup=True) doesn't work on windows "permission denied"
+    # Conditionally display in notebooks
+    try:
+        from IPython.display import display
+        display(graph)
+        return None
+    except Exception:
+        pass  # Not in an IPython notebook or display() unavailable
+
     return graph
-	
-	
+
+
+def is_inflow_of_stock(model_dict, flow_name):
+    """
+    Check if the given flow_name is an inflow of at least one stock in the model dictionary.
+
+    Parameters:
+    - model_dict (dict): The model dictionary containing stocks, flows, and auxiliaries.
+    - flow_name (str): The name of the flow to check.
+
+    Returns:
+    - bool: True if flow_name is an inflow of at least one stock, False otherwise.
+    """
+    for stock, stock_data in model_dict['stocks'].items():
+        if flow_name in stock_data['inflows']:
+            return True
+    return False
+
+
+def is_outflow_of_stock(model_dict, flow_name):
+    """
+    Check if the given flow_name is an outflow of at least one stock in the model dictionary.
+
+    Parameters:
+    - model_dict (dict): The model dictionary containing stocks, flows, and auxiliaries.
+    - flow_name (str): The name of the flow to check.
+
+    Returns:
+    - bool: True if flow_name is an outflow of at least one stock, False otherwise.
+    """
+    for stock, stock_data in model_dict['stocks'].items():
+        if flow_name in stock_data['outflows']:
+            return True
+    return False
+
+
 def draw_model_diagram(filename=None, format="svg"):
     """
-    Draw a diagram of the current model. 
+    Draw a diagram of the current model.
 
     Parameters
     ----------
@@ -341,9 +442,9 @@ def draw_model_diagram(filename=None, format="svg"):
     filename = filename
     format = format
     if model_type == "continuous": return(draw_sd_model(filename, format))
-    if model_type == "discrete": return(draw_discrete_model_diagram(filename, format, engine='dot'))	
-	
-# Discrete Event Modeling 
+    if model_type == "discrete": return(draw_discrete_model_diagram(filename, format, engine='dot'))
+
+# Discrete Event Modeling
 
 # define network dictionary of dictionaries
 network = {}
@@ -361,14 +462,14 @@ def init_de_model():
     run_specs.clear()
     entity_num = 0
     entity_data.clear()
-    
+
     # create simulation environment
     env = simpy.Environment()
     model_type = "discrete"
 
 def add_server(name, connections, service_time, capacity=1):
     """
-    Add a server to a discrete event model. 
+    Add a server to a discrete event model.
 
     Parameters
     ----------
@@ -394,7 +495,7 @@ def add_server(name, connections, service_time, capacity=1):
 
 def add_delay(name, connections, delay_time):
     """
-    Add a delay to a discrete event model. 
+    Add a delay to a discrete event model.
 
     Parameters
     ----------
@@ -415,7 +516,7 @@ def add_delay(name, connections, delay_time):
 
 def add_source(name, entity_name, num_entities, connections, interarrival_time):
     """
-    Add a source node to a discrete event model to generate entities. 
+    Add a source node to a discrete event model to generate entities.
 
     Parameters
     ----------
@@ -447,7 +548,7 @@ def add_source(name, entity_name, num_entities, connections, interarrival_time):
 
 def add_terminate(name):
     """
-    Add a terminate node to a discrete event model for entities leaving the system. 
+    Add a terminate node to a discrete event model for entities leaving the system.
 
     Parameters
     ----------
@@ -455,7 +556,7 @@ def add_terminate(name):
     	A name for the terminate.
     """
     network[name] = {
-        'type': 'terminate', 
+        'type': 'terminate',
         'connections': {}}
 
 
@@ -495,7 +596,7 @@ def process_node(env, node_name, entity_num, entity_name):
             network[node_name]['service_times'].append(service_time)
             entity_data[entity_num]['nodes'].append((node_name, env.now))
             network[node_name]['resource_busy_time'] += service_time
-            network[node_name]['resource_utilization'] = network[node_name]['resource_busy_time']/env.now/network[node_name]['capacity'] 
+            network[node_name]['resource_utilization'] = network[node_name]['resource_busy_time']/env.now/network[node_name]['capacity']
             if run_specs['verbose']: print(f"{env.now}: {entity_name} {entity_num} completed using {node_name} resource with service time {service_time}")
 
     if network[node_name]['type'] == 'terminate':
@@ -517,7 +618,7 @@ def process_node(env, node_name, entity_num, entity_name):
 def run_de_model(verbose=True):
     """
     Executes the current model
-    
+
     Returns:
     ----------
     Simulation output
@@ -578,7 +679,7 @@ def draw_discrete_model_diagram(filename=None, format='svg', engine='dot'):
         graph.render(
         )  # render and save file, clean up temporary dot source file (no extension) after successful rendering with (cleanup=True) doesn't work on windows "permission denied"
     return graph
-    
+
 def plot_histogram(data, filename=None, xlabel= "Data"):
     """
     Plot a histogram for a dataset and optionally save to a file.
@@ -588,7 +689,7 @@ def plot_histogram(data, filename=None, xlabel= "Data"):
     data: list
     	A list of the data values
     filename: string, optional
-    	A name for the file 	
+    	A name for the file
     xlabel: string , optional
     	A label for the x-axis
 
@@ -605,3 +706,39 @@ def plot_histogram(data, filename=None, xlabel= "Data"):
     plt.subplots_adjust(bottom=0.15,)
     if filename is not None: plt.savefig(filename)
     return fig
+
+def plot_utilization(data, xlabel="Time", ylabel="Utilization", title="Server Utilization Over Time"):
+    """
+    Plot the server utilization over time as a step function.
+
+    Parameters:
+    -----------
+    data : list of tuples
+        Each tuple contains a timestamp and the corresponding utilization.
+    xlabel : str, optional
+        Label for the x-axis.
+    ylabel : str, optional
+        Label for the y-axis.
+    title : str, optional
+        Title of the graph.
+
+    Returns:
+    --------
+    A Matplotlib plot.
+    """
+    # Extract time and utilization values from the data
+    time_values, utilization_values = zip(*data)
+
+    # Add the end time for the last utilization value
+    time_values = list(time_values) + [time_values[-1] + 1]
+    utilization_values = list(utilization_values) + [utilization_values[-1]]
+
+    # Create the plot
+    plt.figure(figsize=(10,6))
+    plt.step(time_values, utilization_values, where='post', linestyle='-')
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.title(title)
+    plt.grid(True)
+    plt.ylim(0, max(utilization_values) + 1)
+    plt.show()
