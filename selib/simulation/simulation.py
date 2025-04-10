@@ -1,5 +1,5 @@
 """
-se-lib Version .35
+se-lib Version .36
 
 Copyright (c) 2022-2025 se-lib Development Team
 
@@ -9,7 +9,6 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
-
 import graphviz
 import textwrap
 import os
@@ -24,6 +23,11 @@ mpl.rcParams['axes.spines.right'] = False
 import simpy
 import random
 import numpy as np
+
+import platform
+import tempfile
+import subprocess
+from IPython.display import SVG, Image, display
 
 online = False
 
@@ -266,7 +270,7 @@ def run_model(verbose=True):
 def get_model_structure():
     """
     Provides model structure
-    
+
     Returns
     ----------
     Model structure dictionary
@@ -291,7 +295,7 @@ def run_sd_model():
     try:
         from IPython.display import display
         display(output)
-        return None # or None
+        return output # or None
     except Exception:
         pass  # Not in an IPython notebook or display() unavailable
 
@@ -326,7 +330,7 @@ def get_final_value(variable):
 def draw_sd_model(filename=None, format='svg'):
     system_dynamics_dict = model_dict
     graph = graphviz.Digraph(engine='dot', filename=filename, format=format)
-    graph.attr(rankdir='LR', size='10,8', splines='spline',)
+    graph.attr(rankdir='LR', size='10,8', splines='spline', margin="0.5,0")
     graph.attr('node', fontname="arial", fontcolor='blue', color='invis', fontsize='10')
     #graph.attr('edge',  minlen='1')
 
@@ -376,11 +380,11 @@ def draw_sd_model(filename=None, format='svg'):
             graph.edge(input_name, aux_name, color="red", arrowhead="normal", constraint='false')
 
     if filename is not None:
-        graph.render()  # render and save file, clean up temporary dot source file (no extension) after successful rendering with (cleanup=True) doesn't work on windows "permission denied"
+        graph.render(quiet=True)  # render and save file, clean up temporary dot source file (no extension) after successful rendering with (cleanup=True) doesn't work on windows "permission denied"
     # Conditionally display in notebooks
     try:
         from IPython.display import display
-        display(graph)
+        display(render_graphviz(graph))
         return None
     except Exception:
         pass  # Not in an IPython notebook or display() unavailable
@@ -421,6 +425,67 @@ def is_outflow_of_stock(model_dict, flow_name):
             return True
     return False
 
+
+def render_graphviz(dot, format='svg'):
+    """
+    Render a Graphviz graph for inline display in IPython, specifically for system dynamics models to suppress label warnings on non-Windows platforms.
+
+    This function renders a graphviz.Digraph or graphviz.Graph to the specified format
+    ('svg', 'png', or 'jpg') and displays it inline. On Linux/macOS (e.g., Colab),
+    Graphviz warnings (e.g., label fitting issues) are suppressed. On Windows, rendering
+    is skipped and the original graph object is returned to avoid compatibility issues.
+
+    Parameters:
+        dot (graphviz.Digraph or graphviz.Graph): The graph to render.
+        format (str): Output format ('svg', 'png', or 'jpg').
+
+    Returns:
+        IPython display object or graphviz object: The rendered image, or the original graph on Windows.
+    """
+    def in_ipython():
+        try:
+            from IPython import get_ipython
+            return get_ipython() is not None
+        except ImportError:
+            return False
+
+    if platform.system() == 'Windows':
+        return dot  # Skip rendering on Windows to avoid subprocess/file issues
+
+    display_map = {
+        'svg': SVG,
+        'png': Image,
+        'jpg': Image
+    }
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        dot_path = os.path.join(tmpdir, 'input.dot')
+        with open(dot_path, 'w', encoding='utf-8') as f:
+            f.write(dot.source)
+
+        cmd = ['dot', f'-T{format}', dot_path]
+        result = subprocess.run(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL  # Suppress Graphviz warnings
+        )
+
+        data = result.stdout
+        if in_ipython():
+            return display_map.get(format, print)(data)
+        else:
+            output_filename = os.path.abspath(f"graph_output.{format}")
+            with open(output_filename, 'wb') as out_file:
+                out_file.write(data)
+            print(f"Graph rendered and saved to: {output_filename}")
+
+            # Try to open in system viewer (macOS only here, but easily extendable)
+            if platform.system() == 'Darwin':
+                subprocess.run(['open', output_filename])
+            elif platform.system() == 'Windows':
+                os.startfile(output_filename)
+            elif platform.system() == 'Linux':
+                subprocess.run(['xdg-open', output_filename])
 
 def draw_model_diagram(filename=None, format="svg"):
     """
