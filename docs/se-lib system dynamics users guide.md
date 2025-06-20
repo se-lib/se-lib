@@ -1,6 +1,6 @@
 # System Dynamics Modeling with se-lib – User's Guide
 
-### March 15, 2025
+### April 17, 2025
 
 ## Table of Contents
 
