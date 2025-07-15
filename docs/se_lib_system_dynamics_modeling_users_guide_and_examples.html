@@ -7510,14 +7510,18 @@ a.anchor-link {
 </style>
 <!-- End of mermaid configuration -->
 <style>
-.toc-entry-h1 { margin-left: 0em; color: blue;}
-.toc-entry-h2 { margin-left: 1em; color: blue;}
-.toc-entry-h3 { margin-left: 2em; color: blue;}
-    .toc-entry-h1 a:hover,
-    .toc-entry-h2 a:hover,
-    .toc-entry-h3 a:hover {
-        text-decoration: underline;
-    }
+.toc-entry-h1, .toc-entry-h2, .toc-entry-h3 {
+  color: #0B3E91;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+.toc-entry-h1 { margin-left: 0em; }
+.toc-entry-h2 { margin-left: 1em; }
+.toc-entry-h3 { margin-left: 2em; }
+.toc-entry-h1 a:hover,
+.toc-entry-h2 a:hover,
+.toc-entry-h3 a:hover {
+  text-decoration: underline;
+}
 </style>
 </head>
 <body class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light"><div><h1>Table of Contents</h1><div class="toc-entry-h1"><a href="#toc-0">Installation</a></div><div class="toc-entry-h1"><a href="#toc-1">System Dynamics Modeling with se-lib – User's Guide</a></div><div class="toc-entry-h3"><a href="#toc-2">July 7, 2025</a></div><div class="toc-entry-h2"><a href="#toc-3">Table of Contents</a></div><div class="toc-entry-h2"><a href="#toc-4">1. Overview</a></div><div class="toc-entry-h2"><a href="#toc-5">2. Getting Started with SE-Lib</a></div><div class="toc-entry-h2"><a href="#toc-6">3. Modeling Guidance and Tips</a></div><div class="toc-entry-h2"><a href="#toc-7">4. Basic Modeling Patterns</a></div><div class="toc-entry-h3"><a href="#toc-8">4.1 Negative Feedback Loop</a></div><div class="toc-entry-h3"><a href="#toc-9">4.2 Exponential Growth</a></div><div class="toc-entry-h3"><a href="#toc-10">4.3 Balancing Loop</a></div><div class="toc-entry-h3"><a href="#toc-11">4.4 Goal-Gap Structure</a></div><div class="toc-entry-h3"><a href="#toc-12">4.5 First-Order Delay</a></div><div class="toc-entry-h3"><a href="#toc-13">4.6 Second-Order Delay</a></div><div class="toc-entry-h2"><a href="#toc-14">5. Displaying Output</a></div><div class="toc-entry-h2"><a href="#toc-15">6. Graphing Functions</a></div><div class="toc-entry-h3"><a href="#toc-16">Plotting to Screen</a></div><div class="toc-entry-h3"><a href="#toc-17">Saving to File</a></div><div class="toc-entry-h2"><a href="#toc-18">7. Random Number Functions</a></div><div class="toc-entry-h3"><a href="#toc-19">Example</a></div><div class="toc-entry-h2"><a href="#toc-20">8. Utility and Test Functions</a></div><div class="toc-entry-h2"><a href="#toc-21">9.  Advanced Usage</a></div><div class="toc-entry-h3"><a href="#toc-22">9.1 Extending a Model Instance</a></div><div class="toc-entry-h3"><a href="#toc-23">9.1 PySD Integration</a></div><div class="toc-entry-h2"><a href="#toc-24">10. Visual Gallery of Model Structures</a></div><div class="toc-entry-h2"><a href="#toc-25">11. Appendix A - Function Reference</a></div><div class="toc-entry-h3"><a href="#toc-26">init_sd_model(start, stop, dt, stop_when=None)</a></div><div class="toc-entry-h3"><a href="#toc-27">add_stock(name, initial, inflows=[], outflows=[])</a></div><div class="toc-entry-h3"><a href="#toc-28">add_flow(name, equation)</a></div><div class="toc-entry-h3"><a href="#toc-29">add_auxiliary(name, equation)</a></div><div class="toc-entry-h3"><a href="#toc-30">add_auxiliary_lookup(name, input, xpoints, ypoints)</a></div><div class="toc-entry-h3"><a href="#toc-31">plot_graph(*outputs)</a></div><div class="toc-entry-h3"><a href="#toc-32">save_graph(*outputs, filename='graph.png')</a></div><div class="toc-entry-h3"><a href="#toc-33">draw_sd_model(filename=None, format='svg')</a></div><div class="toc-entry-h3"><a href="#toc-34">get_stop_time()</a></div><div class="toc-entry-h3"><a href="#toc-35">get_model_structure()</a></div><div class="toc-entry-h1"><a href="#toc-36">Examples</a></div><div class="toc-entry-h1"><a href="#toc-37">Exponential Growth</a></div><div class="toc-entry-h1"><a href="#toc-38">Negative Feedback</a></div><div class="toc-entry-h1"><a href="#toc-39">Goal Seeking Behavior</a></div><div class="toc-entry-h1"><a href="#toc-40">Rayleigh Curve Staffing</a></div><div class="toc-entry-h2"><a href="#toc-41">Random Functions and Measuring Stop Time</a></div><div class="toc-entry-h1"><a href="#toc-42">Predator Prey Model</a></div><div class="toc-entry-h1"><a href="#toc-43">Object Oriented Simulation Examples Using Classes</a></div><div class="toc-entry-h1"><a href="#toc-44">Monte Carlo Simulation and Output Analysis</a></div><div class="toc-entry-h1"><a href="#toc-45">Special Functions</a></div><div class="toc-entry-h2"><a href="#toc-46">Stop When Condition</a></div><div class="toc-entry-h2"><a href="#toc-47">If Then Else</a></div></div>
@@ -7563,104 +7567,7 @@ a.anchor-link {
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Collecting se-lib
-  Downloading se_lib-0.42.0-py3-none-any.whl.metadata (1.7 kB)
-Requirement already satisfied: graphviz in /usr/local/lib/python3.11/dist-packages (from se-lib) (0.21)
-Requirement already satisfied: ipython in /usr/local/lib/python3.11/dist-packages (from se-lib) (7.34.0)
-Requirement already satisfied: matplotlib in /usr/local/lib/python3.11/dist-packages (from se-lib) (3.10.0)
-Requirement already satisfied: pandas in /usr/local/lib/python3.11/dist-packages (from se-lib) (2.2.2)
-Collecting pysd (from se-lib)
-  Downloading pysd-3.14.3-py3-none-any.whl.metadata (6.0 kB)
-Collecting simpy (from se-lib)
-  Downloading simpy-4.1.1-py3-none-any.whl.metadata (6.1 kB)
-Requirement already satisfied: setuptools&gt;=18.5 in /usr/local/lib/python3.11/dist-packages (from ipython-&gt;se-lib) (75.2.0)
-Collecting jedi&gt;=0.16 (from ipython-&gt;se-lib)
-  Downloading jedi-0.19.2-py2.py3-none-any.whl.metadata (22 kB)
-Requirement already satisfied: decorator in /usr/local/lib/python3.11/dist-packages (from ipython-&gt;se-lib) (4.4.2)
-Requirement already satisfied: pickleshare in /usr/local/lib/python3.11/dist-packages (from ipython-&gt;se-lib) (0.7.5)
-Requirement already satisfied: traitlets&gt;=4.2 in /usr/local/lib/python3.11/dist-packages (from ipython-&gt;se-lib) (5.7.1)
-Requirement already satisfied: prompt-toolkit!=3.0.0,!=3.0.1,&lt;3.1.0,&gt;=2.0.0 in /usr/local/lib/python3.11/dist-packages (from ipython-&gt;se-lib) (3.0.51)
-Requirement already satisfied: pygments in /usr/local/lib/python3.11/dist-packages (from ipython-&gt;se-lib) (2.19.2)
-Requirement already satisfied: backcall in /usr/local/lib/python3.11/dist-packages (from ipython-&gt;se-lib) (0.2.0)
-Requirement already satisfied: matplotlib-inline in /usr/local/lib/python3.11/dist-packages (from ipython-&gt;se-lib) (0.1.7)
-Requirement already satisfied: pexpect&gt;4.3 in /usr/local/lib/python3.11/dist-packages (from ipython-&gt;se-lib) (4.9.0)
-Requirement already satisfied: contourpy&gt;=1.0.1 in /usr/local/lib/python3.11/dist-packages (from matplotlib-&gt;se-lib) (1.3.2)
-Requirement already satisfied: cycler&gt;=0.10 in /usr/local/lib/python3.11/dist-packages (from matplotlib-&gt;se-lib) (0.12.1)
-Requirement already satisfied: fonttools&gt;=4.22.0 in /usr/local/lib/python3.11/dist-packages (from matplotlib-&gt;se-lib) (4.58.4)
-Requirement already satisfied: kiwisolver&gt;=1.3.1 in /usr/local/lib/python3.11/dist-packages (from matplotlib-&gt;se-lib) (1.4.8)
-Requirement already satisfied: numpy&gt;=1.23 in /usr/local/lib/python3.11/dist-packages (from matplotlib-&gt;se-lib) (2.0.2)
-Requirement already satisfied: packaging&gt;=20.0 in /usr/local/lib/python3.11/dist-packages (from matplotlib-&gt;se-lib) (24.2)
-Requirement already satisfied: pillow&gt;=8 in /usr/local/lib/python3.11/dist-packages (from matplotlib-&gt;se-lib) (11.2.1)
-Requirement already satisfied: pyparsing&gt;=2.3.1 in /usr/local/lib/python3.11/dist-packages (from matplotlib-&gt;se-lib) (3.2.3)
-Requirement already satisfied: python-dateutil&gt;=2.7 in /usr/local/lib/python3.11/dist-packages (from matplotlib-&gt;se-lib) (2.9.0.post0)
-Requirement already satisfied: pytz&gt;=2020.1 in /usr/local/lib/python3.11/dist-packages (from pandas-&gt;se-lib) (2025.2)
-Requirement already satisfied: tzdata&gt;=2022.7 in /usr/local/lib/python3.11/dist-packages (from pandas-&gt;se-lib) (2025.2)
-Collecting parsimonious (from pysd-&gt;se-lib)
-  Downloading parsimonious-0.10.0-py3-none-any.whl.metadata (25 kB)
-Requirement already satisfied: xarray&gt;=2023.9 in /usr/local/lib/python3.11/dist-packages (from pysd-&gt;se-lib) (2025.3.1)
-Requirement already satisfied: lxml in /usr/local/lib/python3.11/dist-packages (from pysd-&gt;se-lib) (5.4.0)
-Requirement already satisfied: regex in /usr/local/lib/python3.11/dist-packages (from pysd-&gt;se-lib) (2024.11.6)
-Requirement already satisfied: chardet in /usr/local/lib/python3.11/dist-packages (from pysd-&gt;se-lib) (5.2.0)
-Collecting black (from pysd-&gt;se-lib)
-  Downloading black-25.1.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.manylinux_2_28_x86_64.whl.metadata (81 kB)
-     <span class="ansi-black-intense-fg">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">81.3/81.3 kB</span> <span class="ansi-red-fg">3.8 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>
-Requirement already satisfied: openpyxl&gt;=3.1.2 in /usr/local/lib/python3.11/dist-packages (from pysd-&gt;se-lib) (3.1.5)
-Requirement already satisfied: scipy in /usr/local/lib/python3.11/dist-packages (from pysd-&gt;se-lib) (1.15.3)
-Requirement already satisfied: progressbar2 in /usr/local/lib/python3.11/dist-packages (from pysd-&gt;se-lib) (4.5.0)
-Collecting portion (from pysd-&gt;se-lib)
-  Downloading portion-2.6.1-py3-none-any.whl.metadata (34 kB)
-Requirement already satisfied: parso&lt;0.9.0,&gt;=0.8.4 in /usr/local/lib/python3.11/dist-packages (from jedi&gt;=0.16-&gt;ipython-&gt;se-lib) (0.8.4)
-Requirement already satisfied: et-xmlfile in /usr/local/lib/python3.11/dist-packages (from openpyxl&gt;=3.1.2-&gt;pysd-&gt;se-lib) (2.0.0)
-Requirement already satisfied: ptyprocess&gt;=0.5 in /usr/local/lib/python3.11/dist-packages (from pexpect&gt;4.3-&gt;ipython-&gt;se-lib) (0.7.0)
-Requirement already satisfied: wcwidth in /usr/local/lib/python3.11/dist-packages (from prompt-toolkit!=3.0.0,!=3.0.1,&lt;3.1.0,&gt;=2.0.0-&gt;ipython-&gt;se-lib) (0.2.13)
-Requirement already satisfied: six&gt;=1.5 in /usr/local/lib/python3.11/dist-packages (from python-dateutil&gt;=2.7-&gt;matplotlib-&gt;se-lib) (1.17.0)
-Requirement already satisfied: click&gt;=8.0.0 in /usr/local/lib/python3.11/dist-packages (from black-&gt;pysd-&gt;se-lib) (8.2.1)
-Collecting mypy-extensions&gt;=0.4.3 (from black-&gt;pysd-&gt;se-lib)
-  Downloading mypy_extensions-1.1.0-py3-none-any.whl.metadata (1.1 kB)
-Collecting pathspec&gt;=0.9.0 (from black-&gt;pysd-&gt;se-lib)
-  Downloading pathspec-0.12.1-py3-none-any.whl.metadata (21 kB)
-Requirement already satisfied: platformdirs&gt;=2 in /usr/local/lib/python3.11/dist-packages (from black-&gt;pysd-&gt;se-lib) (4.3.8)
-Collecting odfpy&gt;=1.4.1 (from pandas[excel]-&gt;pysd-&gt;se-lib)
-  Downloading odfpy-1.4.1.tar.gz (717 kB)
-     <span class="ansi-black-intense-fg">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">717.0/717.0 kB</span> <span class="ansi-red-fg">8.9 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>
-  Preparing metadata (setup.py) ... done
-Collecting python-calamine&gt;=0.1.7 (from pandas[excel]-&gt;pysd-&gt;se-lib)
-  Downloading python_calamine-0.4.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (3.9 kB)
-Collecting pyxlsb&gt;=1.0.10 (from pandas[excel]-&gt;pysd-&gt;se-lib)
-  Downloading pyxlsb-1.0.10-py2.py3-none-any.whl.metadata (2.5 kB)
-Requirement already satisfied: xlrd&gt;=2.0.1 in /usr/local/lib/python3.11/dist-packages (from pandas[excel]-&gt;pysd-&gt;se-lib) (2.0.2)
-Collecting xlsxwriter&gt;=3.0.5 (from pandas[excel]-&gt;pysd-&gt;se-lib)
-  Downloading xlsxwriter-3.2.5-py3-none-any.whl.metadata (2.7 kB)
-Requirement already satisfied: sortedcontainers~=2.2 in /usr/local/lib/python3.11/dist-packages (from portion-&gt;pysd-&gt;se-lib) (2.4.0)
-Requirement already satisfied: python-utils&gt;=3.8.1 in /usr/local/lib/python3.11/dist-packages (from progressbar2-&gt;pysd-&gt;se-lib) (3.9.1)
-Requirement already satisfied: defusedxml in /usr/local/lib/python3.11/dist-packages (from odfpy&gt;=1.4.1-&gt;pandas[excel]-&gt;pysd-&gt;se-lib) (0.7.1)
-Requirement already satisfied: typing_extensions&gt;3.10.0.2 in /usr/local/lib/python3.11/dist-packages (from python-utils&gt;=3.8.1-&gt;progressbar2-&gt;pysd-&gt;se-lib) (4.14.0)
-Downloading se_lib-0.42.0-py3-none-any.whl (31 kB)
-Downloading pysd-3.14.3-py3-none-any.whl (150 kB)
-   <span class="ansi-black-intense-fg">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">150.2/150.2 kB</span> <span class="ansi-red-fg">8.5 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>
-Downloading simpy-4.1.1-py3-none-any.whl (27 kB)
-Downloading jedi-0.19.2-py2.py3-none-any.whl (1.6 MB)
-   <span class="ansi-black-intense-fg">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">1.6/1.6 MB</span> <span class="ansi-red-fg">49.5 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>
-Downloading black-25.1.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.manylinux_2_28_x86_64.whl (1.7 MB)
-   <span class="ansi-black-intense-fg">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">1.7/1.7 MB</span> <span class="ansi-red-fg">58.6 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>
-Downloading parsimonious-0.10.0-py3-none-any.whl (48 kB)
-   <span class="ansi-black-intense-fg">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">48.4/48.4 kB</span> <span class="ansi-red-fg">2.8 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>
-Downloading portion-2.6.1-py3-none-any.whl (27 kB)
-Downloading mypy_extensions-1.1.0-py3-none-any.whl (5.0 kB)
-Downloading pathspec-0.12.1-py3-none-any.whl (31 kB)
-Downloading python_calamine-0.4.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (888 kB)
-   <span class="ansi-black-intense-fg">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">888.0/888.0 kB</span> <span class="ansi-red-fg">39.4 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>
-Downloading pyxlsb-1.0.10-py2.py3-none-any.whl (23 kB)
-Downloading xlsxwriter-3.2.5-py3-none-any.whl (172 kB)
-   <span class="ansi-black-intense-fg">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="ansi-green-fg">172.3/172.3 kB</span> <span class="ansi-red-fg">12.2 MB/s</span> eta <span class="ansi-cyan-fg">0:00:00</span>
-Building wheels for collected packages: odfpy
-  Building wheel for odfpy (setup.py) ... done
-  Created wheel for odfpy: filename=odfpy-1.4.1-py2.py3-none-any.whl size=160673 sha256=680672f95f9c517fd70a8bae7ffa702eb240cfb05f329e6e50709acf77d843db
-  Stored in directory: /root/.cache/pip/wheels/d6/1d/c8/8c29be1d73ca42d15977c75193d9f39a98499413c2838ac54c
-Successfully built odfpy
-Installing collected packages: pyxlsb, xlsxwriter, simpy, python-calamine, portion, pathspec, parsimonious, odfpy, mypy-extensions, jedi, black, pysd, se-lib
-Successfully installed black-25.1.0 jedi-0.19.2 mypy-extensions-1.1.0 odfpy-1.4.1 parsimonious-0.10.0 pathspec-0.12.1 portion-2.6.1 pysd-3.14.3 python-calamine-0.4.0 pyxlsb-1.0.10 se-lib-0.42.0 simpy-4.1.1 xlsxwriter-3.2.5
-</pre>
+
 </div>
 </div>
 </div>
