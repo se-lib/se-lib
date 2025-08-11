@@ -1,5 +1,5 @@
 """
-se-lib Version .41
+se-lib Version .42
 
 Copyright (c) 2022-2025 se-lib Development Team
 
@@ -37,7 +37,7 @@ import numpy as np
 
 online = False
 
-####################### SYSTEM DYNAMICS ###############################
+########################### SYSTEM DYNAMICS MODELING ###########################
 
 class SystemDynamicsModel:
     """
@@ -727,8 +727,9 @@ def init_sd_model(start, stop, dt, stop_when=None):
     SystemDynamicsModel
         A new system dynamics model instance
     """
-    global sd_model
+    global sd_model, model_type
     sd_model = SystemDynamicsModel(start, stop, dt, stop_when)
+    model_type = "continuous"
     return sd_model
 
 def add_stock(name, initial, inflows=None, outflows=None):
@@ -817,8 +818,9 @@ def run_model(verbose=True):
     pd.DataFrame
         Pandas dataframe containing run outputs for each variable at each timestep
     """
-    return sd_model.run_model(verbose)
-
+    if model_type == "continuous": return sd_model.run_model(verbose)
+    if model_type == "discrete": return de_model.run_model(verbose)
+    
 def plot_graph(*run_outputs):
     """
     Display matplotlib graph for each model variable.
@@ -905,27 +907,497 @@ def draw_model_diagram(filename=None, format="svg"):
     if model_type == "continuous": return(draw_sd_model(filename, format))
     if model_type == "discrete": return(draw_discrete_model_diagram(filename, format, engine='dot'))
 
-####################### DISCRETE EVENT ###############################
-# define network dictionary of dictionaries
-network = {}
+########################### DISCRETE EVENT MODELING ############################
 
-run_specs = {}
-entity_num = 0
-entity_data = {}
+class DiscreteEventModel:
+    """
+    A class representing a Discrete Event model.
 
+    This class provides methods to define, simulate and visualize discrete event models,
+    including servers with queues, delays, sources, and terminators.
+    """
+
+    def __init__(self):
+        """
+        Initialize a discrete event model.
+        """
+        import simpy
+        import random
+
+        self.network = {}
+        self.run_specs = {}
+        self.entity_num = 0
+        self.entity_data = {}
+
+        # Create simulation environment
+        self.env = simpy.Environment()
+
+    def add_server(self, name, connections, service_time, capacity=1) -> None:
+        """
+        Add a server to the discrete event model.
+
+        Parameters
+        ----------
+        name: str
+            A name for the server.
+        connections: dict
+            A dictionary of the node connections after the server.
+            The node names are the keys and the values are the relative probabilities of traversing the connection.
+        service_time: str or callable
+            The time to service an entity. May be a constant, random function, or expression to be evaluated.
+        capacity: int, optional
+            The number of resource usage slots in the server, by default 1
+        """
+        self.network[name] = {
+            'type': 'server',
+            'resource': simpy.Resource(self.env, capacity=capacity),
+            'connections': connections,
+            'service_time': service_time,
+            'waiting_times': [],
+            'service_times': [],
+            'capacity': capacity,
+            'resource_busy_time': 0,
+            'resource_utilization': 0
+        }
+
+    def add_delay(self, name, connections, delay_time) -> None:
+        """
+        Add a delay to the discrete event model.
+
+        Parameters
+        ----------
+        name: str
+            A name for the delay.
+        connections: dict
+            A dictionary of the node connections after the delay.
+            The node names are the keys and the values are the relative probabilities of traversing the connection.
+        delay_time: str or callable
+            The time delay for entities to traverse. May be a constant, random function, or expression to be evaluated.
+        """
+        self.network[name] = {
+            'type': 'delay',
+            'connections': connections,
+            'delay_time': delay_time,
+            'delay_times': [],
+        }
+
+    def add_source(self, name, entity_name, num_entities, connections, interarrival_time) -> None:
+        """
+        Add a source node to the discrete event model to generate entities.
+
+        Parameters
+        ----------
+        name: str
+            A name for the source.
+        entity_name: str
+            A name for the type of entity being generated.
+        num_entities: int
+            Number of entities to generate.
+        connections: dict
+            A dictionary of the node connections after the source.
+            The node names are the keys and the values are the relative probabilities of traversing the connection.
+        interarrival_time: str
+            The time between entity arrivals into the system.
+            The string may enclose a constant, random function or logical expression to be evaluated.
+        """
+        self.network[name] = {
+            'type': 'source',
+            'entity_name': entity_name,
+            'num_entities': num_entities,
+            'connections': connections,
+            'interarrival_time': interarrival_time,
+            'arrivals': []
+        }
+        self.run_specs[name] = {}
+        self.run_specs[name]['interarrival_time'] = interarrival_time
+        self.run_specs[name]['num_entities'] = num_entities
+        self.run_specs[name]['entity_name'] = entity_name
+        self.run_specs[name]['source'] = name
+
+    def add_terminate(self, name) -> None:
+        """
+        Add a terminate node to the discrete event model for entities leaving the system.
+
+        Parameters
+        ----------
+        name: str
+            A name for the terminate.
+        """
+        self.network[name] = {
+            'type': 'terminate',
+            'connections': {}
+        }
+
+    def _process_initial_arrival(self, arrival_time, node_name, entity_num, entity_name):
+        """
+        Process the initial arrival of an entity to the system.
+
+        Parameters
+        ----------
+        arrival_time: float
+            Time of arrival
+        node_name: str
+            Name of the node where the entity arrives
+        entity_num: int
+            Entity identifier number
+        entity_name: str
+            Name of the entity type
+        """
+        yield self.env.timeout(arrival_time)
+        if self.run_specs.get('verbose', False):
+            print(f"{self.env.now}: {entity_name} {entity_num} entered from {node_name}")
+        self.env.process(self._process_node(node_name, entity_num, entity_name))
+
+    def _process_node(self, node_name, entity_num, entity_name):
+        """
+        Process an entity through a node in the system.
+
+        Parameters
+        ----------
+        node_name: str
+            Name of the node to process
+        entity_num: int
+            Entity identifier number
+        entity_name: str
+            Name of the entity type
+        """
+        # Process resource usage
+        if self.network[node_name]['type'] == 'delay':
+            delay_time = eval(self.network[node_name]['delay_time'])
+            yield self.env.timeout(delay_time)
+            self.network[node_name]['delay_times'].append(delay_time)
+            if self.run_specs.get('verbose', False):
+                print(f"{self.env.now}: {entity_name} {entity_num} delayed {delay_time} at {node_name}")
+            self.entity_data[entity_num]['nodes'].append((node_name, self.env.now))
+
+        if self.network[node_name]['type'] == 'server':
+            with self.network[node_name]['resource'].request() as req:
+                if self.run_specs.get('verbose', False):
+                    print(f"{self.env.now}: {entity_name} {entity_num} requesting {node_name} resource ")
+                this_arrival_time = self.env.now
+                yield req
+
+                waiting_time = self.env.now - this_arrival_time
+                # Collect waiting times
+                self.network[node_name]['waiting_times'].append(waiting_time)
+                if self.run_specs.get('verbose', False):
+                    print(f"{self.env.now}: {entity_name} {entity_num} granted {node_name} resource waiting time {waiting_time}")
+                service_time = eval(self.network[node_name]['service_time'])
+                yield self.env.timeout(service_time)
+
+                # Collect service times
+                self.network[node_name]['service_times'].append(service_time)
+                self.entity_data[entity_num]['nodes'].append((node_name, self.env.now))
+                self.network[node_name]['resource_busy_time'] += service_time
+                self.network[node_name]['resource_utilization'] = (
+                    self.network[node_name]['resource_busy_time'] /
+                    self.env.now /
+                    self.network[node_name]['capacity']
+                )
+                if self.run_specs.get('verbose', False):
+                    print(f"{self.env.now}: {entity_name} {entity_num} completed using {node_name} resource with service time {service_time}")
+
+        if self.network[node_name]['type'] == 'terminate':
+            if self.run_specs.get('verbose', False):
+                print(f"{self.env.now}: {entity_name} {entity_num} leaving system at {node_name} ")
+            self.entity_data[entity_num]['nodes'].append((node_name, self.env.now))
+            self.entity_data[entity_num]['departure'] = self.env.now
+
+        # Process arrivals and connections
+        if len(self.network[node_name]['connections']) > 0:
+            import random
+
+            weight_list = []
+            for next_node in self.network[node_name]['connections'].keys():
+                weight_list.append(eval(str(self.network[node_name]['connections'][next_node])))
+            weights = tuple(weight_list)
+
+            connection = random.choices(list(self.network[node_name]['connections'].keys()), weights, k=1)[0]
+            if self.run_specs.get('verbose', False):
+                print(f"{self.env.now}: {entity_name} {entity_num} {node_name} -> {connection}")
+            self.env.process(self._process_node(connection, entity_num, entity_name))
+
+    def run_model(self, verbose=True) -> tuple:
+        """
+        Execute the current model.
+
+        Parameters
+        ----------
+        verbose : bool, optional
+            Whether to display verbose output, by default True
+
+        Returns
+        -------
+        tuple
+            A tuple containing the network and entity data dictionaries
+        """
+        self.run_specs['verbose'] = verbose
+
+        for key, value in self.network.items():
+            if value.get('type') == 'source':
+                source_name = key
+                arrival_time = 0
+                for entity_num in range(self.network[source_name]['num_entities']):
+                    arrival_time += eval(self.network[source_name]['interarrival_time'])
+                    self.network[source_name]['arrivals'].append(arrival_time)
+                    entity_num += 1
+
+                    self.entity_data[entity_num] = {'arrival': arrival_time, 'nodes': [], 'departure': None}
+                    self.env.process(
+                        self._process_initial_arrival(
+                            arrival_time,
+                            source_name,
+                            entity_num,
+                            self.network[source_name]['entity_name']
+                        )
+                    )
+
+        self.env.run()
+        return self.network, self.entity_data
+
+    def draw_model(self, filename=None, format='svg', engine='dot') -> Optional[graphviz.Digraph]:
+        """
+        Draw a diagram of the model.
+
+        Parameters
+        ----------
+        filename : str, optional
+            A filename for the output not including a filename extension
+        format : str, optional
+            The file format of the graphic output ('svg', 'png', etc.)
+        engine : str, optional
+            The Graphviz layout engine to use, by default 'dot'
+
+        Returns
+        -------
+        graphviz.Digraph
+            Graphviz diagram of the discrete event model
+        """
+        import graphviz
+
+        node_attr = {
+            'color': 'black',
+            'fontsize': '11',
+            'fontname': 'arial',
+            'shape': 'none'
+        }
+
+        graph = graphviz.Digraph('G',
+                                node_attr=node_attr,
+                                filename=filename,
+                                format=format,
+                                engine=engine)
+        graph.attr(rankdir='LR', ranksep='.7')
+
+        for node_name in self.network:
+            if self.network[node_name]['type'] == "source":
+                graph.node(node_name, label=f'❚❚❱\n\{node_name}', shape='none')
+            if self.network[node_name]['type'] == "terminate":
+                graph.node(node_name, label=f'❱❚❚\n\{node_name}', shape='none')
+            if self.network[node_name]['type'] == "server":
+                graph.node(node_name, label=f'❚❚▣\n{node_name}', shape='none')
+            if self.network[node_name]['type'] == "delay":
+                graph.node(node_name, label=f'◷\n{node_name}', shape='none')
+
+            for connection in self.network[node_name]['connections']:
+                graph.edge(node_name, connection)
+
+        if filename is not None:
+            graph.render(quiet=True)
+
+        # Conditionally display in notebooks
+        try:
+            from IPython.display import display
+            display(self._render_graphviz(graph))
+            return None
+        except Exception:
+            pass  # Not in an IPython notebook or display() unavailable
+
+        return graph
+
+    def draw_model_diagram(self, filename=None, format='svg') -> Optional[graphviz.Digraph]:
+        return self.draw_model(filename=filename, format=format)
+
+
+    def _render_graphviz(self, dot, format='svg') -> Union[SVG, Image, None]:
+        """
+        Render a Graphviz graph for inline display in IPython, specifically for system dynamics models
+        to suppress label warnings on non-Windows platforms.
+
+        Parameters
+        ----------
+        dot : graphviz.Digraph or graphviz.Graph
+            The graph to render
+        format : str, optional
+            Output format ('svg', 'png', or 'jpg'), by default 'svg'
+
+        Returns
+        -------
+        IPython display object or graphviz object
+            The rendered image, or the original graph on Windows
+        """
+        def in_ipython():
+            try:
+                from IPython import get_ipython
+                return get_ipython() is not None
+            except ImportError:
+                return False
+
+        if platform.system() == 'Windows':
+            return dot  # Skip rendering on Windows to avoid subprocess/file issues
+
+        display_map = {
+            'svg': SVG,
+            'png': Image,
+            'jpg': Image
+        }
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            dot_path = os.path.join(tmpdir, 'input.dot')
+            with open(dot_path, 'w', encoding='utf-8') as f:
+                f.write(dot.source)
+
+            cmd = ['dot', f'-T{format}', dot_path]
+            result = subprocess.run(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.DEVNULL  # Suppress Graphviz warnings
+            )
+
+            data = result.stdout
+            if in_ipython():
+                return display_map.get(format, print)(data)
+            else:
+                output_filename = os.path.abspath(f"graph_output.{format}")
+                with open(output_filename, 'wb') as out_file:
+                    out_file.write(data)
+                print(f"Graph rendered and saved to: {output_filename}")
+
+                # Try to open in system viewer
+                if platform.system() == 'Darwin':
+                    subprocess.run(['open', output_filename])
+                elif platform.system() == 'Windows':
+                    os.startfile(output_filename)
+                elif platform.system() == 'Linux':
+                    subprocess.run(['xdg-open', output_filename])
+
+
+
+    def plot_histogram(self, data, filename=None, xlabel="Data") -> None:
+        """
+        Plot a histogram for a dataset and optionally save to a file.
+
+        Parameters
+        ----------
+        data: list
+            A list of the data values
+        filename: str, optional
+            A name for the file
+        xlabel: str, optional
+            A label for the x-axis
+
+        Returns
+        -------
+        matplotlib.figure.Figure
+            A Matplotlib histogram figure
+        """
+        import matplotlib.pyplot as plt
+
+        kwargs = {'color': 'blue', 'rwidth': 0.9}
+        fig, ax = plt.subplots(figsize=(5, 3))
+        ax.hist(data, **kwargs)
+        ax.set(xlabel=xlabel, ylabel='Frequency')
+        ax.xaxis.labelmargin = -50
+        ax.yaxis.labelmargin = 30
+        plt.subplots_adjust(bottom=0.15,)
+
+        if filename is not None:
+            plt.savefig(filename)
+
+        plt.show()
+        #return fig
+
+    def plot_utilization(self, data, xlabel="Time", ylabel="Utilization", title="Server Utilization Over Time") -> None:
+        """
+        Plot the server utilization over time as a step function.
+
+        Parameters
+        ----------
+        data : list of tuples
+            Each tuple contains a timestamp and the corresponding utilization.
+        xlabel : str, optional
+            Label for the x-axis.
+        ylabel : str, optional
+            Label for the y-axis.
+        title : str, optional
+            Title of the graph.
+
+        Returns
+        -------
+        matplotlib.figure.Figure
+            A Matplotlib plot figure
+        """
+        import matplotlib.pyplot as plt
+
+        # Extract time and utilization values from the data
+        time_values, utilization_values = zip(*data)
+
+        # Add the end time for the last utilization value
+        time_values = list(time_values) + [time_values[-1] + 1]
+        utilization_values = list(utilization_values) + [utilization_values[-1]]
+
+        # Create the plot
+        fig = plt.figure(figsize=(10, 6))
+        plt.step(time_values, utilization_values, where='post', linestyle='-')
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        plt.title(title)
+        plt.grid(True)
+        plt.ylim(0, max(utilization_values) + 1)
+
+        plt.show()
+        #return fig
+
+    def get_network(self) -> dict:
+        """
+        Get the model network structure.
+
+        Returns
+        -------
+        dict
+            Dictionary containing the network structure
+        """
+        return self.network
+
+    def get_entity_data(self) -> dict:
+        """
+        Get the entity data from the simulation.
+
+        Returns
+        -------
+        dict
+            Dictionary containing the entity data
+        """
+        return self.entity_data
+
+
+# Global instance for compatibility with procedural API
+de_model = None
+
+# Helper functions outside the class to maintain compatibility with the original API
 def init_de_model():
     """
     Instantiates a discrete event model for simulation
-    """
-    global env, entity_num, entity_data, run_specs, model_type
-    network.clear()
-    run_specs.clear()
-    entity_num = 0
-    entity_data.clear()
 
-    # create simulation environment
-    env = simpy.Environment()
+    Returns
+    -------
+    DiscreteEventModel
+        A new discrete event model instance
+    """
+    global de_model, model_type
+    de_model = DiscreteEventModel()
     model_type = "discrete"
+    return de_model
 
 def add_server(name, connections, service_time, capacity=1):
     """
@@ -933,25 +1405,16 @@ def add_server(name, connections, service_time, capacity=1):
 
     Parameters
     ----------
-    name: string
-    	A name for the server.
-    connections: dictionary
-    	A dictionary of the node connections after the server.  The node names are the keys and the values are the relative probabilities of traversing the connection.
-    capacity: integer
-    	The number of resource usage slots in the server
+    name: str
+        A name for the server.
+    connections: dict
+        A dictionary of the node connections after the server.
+    service_time: str or callable
+        The time to service an entity.
+    capacity: int, optional
+        The number of resource usage slots in the server, by default 1
     """
-    network[name] = {
-        'type': 'server',
-        'resource': simpy.Resource(env, capacity=capacity),
-        'connections': connections,
-        'service_time': service_time,
-        'waiting_times': [],
-        'service_times': [],
-        'capacity': capacity,
-        'resource_busy_time': 0,
-        'resource_utilization': 0
-    }
-
+    de_model.add_server(name, connections, service_time, capacity)
 
 def add_delay(name, connections, delay_time):
     """
@@ -959,20 +1422,14 @@ def add_delay(name, connections, delay_time):
 
     Parameters
     ----------
-    name: string
-    	A name for the delay.
-    connections: dictionary
-    	A dictionary of the node connections after the delay.  The node names are the keys and the values are the relative probabilities of traversing the connections.
-    delay_time: float
-    	The time delay for entities to traverse.  May be a constant or random function.
+    name: str
+        A name for the delay.
+    connections: dict
+        A dictionary of the node connections after the delay.
+    delay_time: str or callable
+        The time delay for entities to traverse.
     """
-    network[name] = {
-        'type': 'delay',
-        'connections': connections,
-        'delay_time': delay_time,
-        'delay_times': [],
-    }
-
+    de_model.add_delay(name, connections, delay_time)
 
 def add_source(name, entity_name, num_entities, connections, interarrival_time):
     """
@@ -980,31 +1437,18 @@ def add_source(name, entity_name, num_entities, connections, interarrival_time):
 
     Parameters
     ----------
-    name: string
-    	A name for the source.
-    entity_name: string
-    	A name for the type of entity being generated.
-    num_entities: integer
-    	Number of entities to generated.
-    connections: dictionary
-    	A dictionary of the node connections after the source.  The node names are the keys and the values are the relative probabilities of traversing the connections.
-    interarrival_time: string
-    	The time between entity arrrivals into the system.  The string may enclose a constant, random function or logical expression to be evaluated.
+    name: str
+        A name for the source.
+    entity_name: str
+        A name for the type of entity being generated.
+    num_entities: int
+        Number of entities to generated.
+    connections: dict
+        A dictionary of the node connections after the source.
+    interarrival_time: str
+        The time between entity arrivals into the system.
     """
-
-    network[name] = {
-        'type': 'source',
-        'entity_name': entity_name,
-        'num_entities': num_entities,
-        'connections': connections,
-        'interarrival_time': interarrival_time,
-        'arrivals': []
-    }
-    run_specs['interarrival_time'] = interarrival_time
-    run_specs['num_entities'] = num_entities
-    run_specs['entity_name'] = entity_name
-    run_specs['source'] = name
-
+    de_model.add_source(name, entity_name, num_entities, connections, interarrival_time)
 
 def add_terminate(name):
     """
@@ -1012,167 +1456,73 @@ def add_terminate(name):
 
     Parameters
     ----------
-    name: string
-    	A name for the terminate.
+    name: str
+        A name for the terminate.
     """
-    network[name] = {
-        'type': 'terminate',
-        'connections': {}}
-
-
-# define processes for each entity
-def process_initial_arrival(env, arrival_time, node_name, entity_num, entity_name):
-    yield env.timeout(arrival_time)
-    if run_specs['verbose']: print(f"{env.now}: {entity_name} {entity_num} entered from {run_specs['source']}")
-    env.process(process_node(env, node_name, entity_num, entity_name))
-
-    # define processes for each node
-def process_node(env, node_name, entity_num, entity_name):
-    # process resource usage
-
-    if network[node_name]['type'] == 'delay':
-        delay_time = eval(network[node_name]['delay_time'])
-        yield env.timeout(delay_time)
-        network[node_name]['delay_times'].append(delay_time)
-        if run_specs['verbose']: print(f"{env.now}: {entity_name} {entity_num} delayed {delay_time} at {node_name}")
-        entity_data[entity_num]['nodes'].append((node_name, env.now))
-
-
-    if network[node_name]['type'] == 'server':
-        with network[node_name]['resource'].request() as req:
-            if run_specs['verbose']: print(f"{env.now}: {entity_name} {entity_num} requesting {node_name} resource ")
-            this_arrival_time = env.now
-            #entity_data[entity_num]['nodes'].append((node_name, env.now))
-            yield req
-
-            waiting_time = env.now - this_arrival_time
-            # collect waiting times
-            network[node_name]['waiting_times'].append(waiting_time)
-            if run_specs['verbose']: print(f"{env.now}: {entity_name} {entity_num} granted {node_name} resource waiting time {waiting_time}")
-            service_time = eval(network[node_name]['service_time'])
-            yield env.timeout(service_time)
-
-            # collect service times
-            network[node_name]['service_times'].append(service_time)
-            entity_data[entity_num]['nodes'].append((node_name, env.now))
-            network[node_name]['resource_busy_time'] += service_time
-            network[node_name]['resource_utilization'] = network[node_name]['resource_busy_time']/env.now/network[node_name]['capacity']
-            if run_specs['verbose']: print(f"{env.now}: {entity_name} {entity_num} completed using {node_name} resource with service time {service_time}")
-
-    if network[node_name]['type'] == 'terminate':
-        if run_specs['verbose']: print(f"{env.now}: {entity_name} {entity_num} leaving system at {node_name} ")
-        entity_data[entity_num]['nodes'].append((node_name, env.now))
-        entity_data[entity_num]['departure'] = env.now
-
-
-            # process arrivals and connections
-    if len(network[node_name]['connections']) > 0:
-        weights = tuple(network[node_name]['connections'].values())
-        #print(weights)
-        connection, probability = random.choice(list(network[node_name]['connections'].items()))
-        connection = random.choices(list(network[node_name]['connections'].keys()), weights, k=1)[0]
-        if run_specs['verbose']: print(f"{env.now}: {entity_name} {entity_num} {node_name} -> {connection}")
-        env.process(process_node(env, connection, entity_num, entity_name))
-
+    de_model.add_terminate(name)
 
 def run_de_model(verbose=True):
     """
     Executes the current model
 
-    Returns:
+    Parameters
     ----------
-    Simulation output
+    verbose : bool, optional
+        Whether to display verbose output, by default True
+
+    Returns
+    -------
+    tuple
+        A tuple containing the network and entity data dictionaries
     """
-    #global verbose
-    verbose = verbose
-    run_specs['verbose'] = verbose
-    for key, value in network.items():
-        if value.get('type') == 'source':
-            source_name = key
-    arrival_time = 0
-    for entity_num in range(run_specs['num_entities']):
-        #yield env.timeout(1)
-        arrival_time += eval(run_specs['interarrival_time'])
-        network[source_name]['arrivals'].append(arrival_time)
-        entity_num += 1
-
-        entity_data[entity_num] = {'arrival': arrival_time, 'nodes': [],'departure': None}
-        env.process(
-            process_initial_arrival(env, arrival_time, source_name,
-                                    entity_num, run_specs['entity_name']))  #+str(entity)
-
-    # start simulation at first node
-    #env.process(process_node(env, 'node1'))
-    env.run()
-    return network, entity_data
-
+    return de_model.run_model(verbose)
 
 def draw_discrete_model_diagram(filename=None, format='svg', engine='dot'):
-    global graph
-    node_attr = {
-        'color': 'black',
-        'fontsize': '11',
-        'fontname': 'arial',
-        'shape': 'none'
-    }  # 'fontname': 'arial',
-    graph = graphviz.Digraph('G',
-                             node_attr=node_attr,
-                             filename=filename,
-                             format=format,
-                             engine=engine)
-    graph.attr(rankdir='LR', ranksep='.7')
-    for node_name in network:
-        if network[node_name]['type'] == "source":
-            graph.node(node_name, label=f'❚❚❱\n\{node_name}', shape='none')
-        if network[node_name]['type'] == "terminate":
-            graph.node(node_name, label=f'❱❚❚\n\{node_name}', shape='none')
-        if network[node_name]['type'] == "server":
-            graph.node(node_name, label=f'❚❚▣\n{node_name}', shape='none')
-        if network[node_name]['type'] == "delay":
-            graph.node(node_name, label=f'◷\n{node_name}', shape='none')
-        for connection in network[node_name]['connections']:
-            graph.edge(
-                node_name,
-                connection,
-            )
-    if filename is not None:
-        graph.render(
-        )  # render and save file, clean up temporary dot source file (no extension) after successful rendering with (cleanup=True) doesn't work on windows "permission denied"
-    return graph
+    """
+    Draw a diagram of the current model.
 
-def plot_histogram(data, filename=None, xlabel= "Data"):
+    Parameters
+    ----------
+    filename : str, optional
+        A filename for the output not including a filename extension
+    format : str, optional
+        The file format of the graphic output ('svg', 'png', etc.)
+    engine : str, optional
+        The Graphviz layout engine to use, by default 'dot'
+
+    Returns
+    -------
+    graphviz.Digraph
+        Graphviz diagram of the discrete event model
+    """
+    return de_model.draw_model(filename, format, engine)
+
+def plot_histogram(data, filename=None, xlabel="Data"):
     """
     Plot a histogram for a dataset and optionally save to a file.
 
     Parameters
     ----------
     data: list
-    	A list of the data values
-    filename: string, optional
-    	A name for the file
-    xlabel: string , optional
-    	A label for the x-axis
+        A list of the data values
+    filename: str, optional
+        A name for the file
+    xlabel: str, optional
+        A label for the x-axis
 
     Returns
     -------
-    A Matplotlib histogram
+    matplotlib.figure.Figure
+        A Matplotlib histogram figure
     """
-    kwargs = {'color': 'blue', 'rwidth': 0.9}
-    fig, ax = plt.subplots(figsize=(5, 3))
-    ax.hist(data, **kwargs)
-    ax.set(xlabel=xlabel, ylabel='Frequency')
-    ax.xaxis.labelmargin = -50
-    ax.yaxis.labelmargin = 30
-    plt.subplots_adjust(bottom=0.15,)
-    if filename is not None: plt.savefig(filename)
-    return fig
+    return de_model.plot_histogram(data, filename, xlabel)
 
 def plot_utilization(data, xlabel="Time", ylabel="Utilization", title="Server Utilization Over Time"):
     """
     Plot the server utilization over time as a step function.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     data : list of tuples
         Each tuple contains a timestamp and the corresponding utilization.
     xlabel : str, optional
@@ -1182,23 +1532,31 @@ def plot_utilization(data, xlabel="Time", ylabel="Utilization", title="Server Ut
     title : str, optional
         Title of the graph.
 
-    Returns:
-    --------
-    A Matplotlib plot.
+    Returns
+    -------
+    matplotlib.figure.Figure
+        A Matplotlib plot figure
     """
-    # Extract time and utilization values from the data
-    time_values, utilization_values = zip(*data)
+    return de_model.plot_utilization(data, xlabel, ylabel, title)
 
-    # Add the end time for the last utilization value
-    time_values = list(time_values) + [time_values[-1] + 1]
-    utilization_values = list(utilization_values) + [utilization_values[-1]]
+def draw_model(filename=None, format="svg"):
+    """
+    Draw a diagram of the current model.
 
-    # Create the plot
-    plt.figure(figsize=(10,6))
-    plt.step(time_values, utilization_values, where='post', linestyle='-')
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
-    plt.title(title)
-    plt.grid(True)
-    plt.ylim(0, max(utilization_values) + 1)
-    plt.show()
+    Parameters
+    ----------
+    filename : string, optional
+        A filename for the output not including a filename extension. The extension will specified by the format parameter.
+    format : string, optional
+        The file format of the graphic output. Note that bitmap formats (png, bmp, or jpeg) will not be as sharp as the default svg vector format and most particularly when magnified.
+
+    Returns
+    -------
+    g : graph object view
+        Save the graph source code to file, and open the rendered result in its default viewing application. se-lib calls the Graphviz API for this.
+
+    """
+    filename = filename
+    format = format
+    if model_type == "continuous": return(draw_sd_model(filename, format))
+    if model_type == "discrete": return(draw_discrete_model_diagram(filename, format, engine='dot'))

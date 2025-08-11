@@ -12,6 +12,8 @@ from .simulation import (
     get_stop_time,
     get_model_structure,
     draw_model_diagram,
+    draw_model,
+    DiscreteEventModel,
     init_de_model,
     add_source,
     add_server,
