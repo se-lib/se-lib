@@ -11,7 +11,7 @@ Python toolkit for integrated systems modeling, continuous and discrete event si
 
 ## 🚀 Quick Start
 
-Try se-lib instantly in a browser with no installation needed:
+Try se-lib instantly in a browser with no installation required:
 
 - <img src="https://colab.research.google.com/img/colab_favicon_256px.png" alt="Colab" width="20"/> [se-lib examples](https://colab.research.google.com/drive/1J0Dnb2qmoMiuJWJTAsMQ5c3F6vjn4CzQ?usp=sharing)
 - <img src="https://colab.research.google.com/img/colab_favicon_256px.png" alt="Colab" width="20"/> [se-lib system dynamics modeling user's guide and examples](https://colab.research.google.com/drive/1oE5TBdF-hpJTQbQgSmPgmPoofBgOTR0B?usp=sharing)
