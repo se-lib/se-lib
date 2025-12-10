@@ -1191,9 +1191,9 @@ class DiscreteEventModel:
 
         for node_name in self.network:
             if self.network[node_name]['type'] == "source":
-                graph.node(node_name, label=f'❚❚❱\n\{node_name}', shape='none')
+                graph.node(node_name, label=f'❚❚❱\n\\{node_name}', shape='none')
             if self.network[node_name]['type'] == "terminate":
-                graph.node(node_name, label=f'❱❚❚\n\{node_name}', shape='none')
+                graph.node(node_name, label=f'❱❚❚\n\\{node_name}', shape='none')
             if self.network[node_name]['type'] == "server":
                 graph.node(node_name, label=f'❚❚▣\n{node_name}', shape='none')
             if self.network[node_name]['type'] == "delay":
