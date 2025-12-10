@@ -25,6 +25,9 @@ These are HTML manual versions of the executable notebooks above.
 - 📖 [se-lib system dynamics modeling users guide and examples](http://se-lib.org/manuals/system_dynamics/)
 - 📖 [se-lib discrete event modeling users guide and examples](http://se-lib.org/manuals/discrete_event)
 
+## se-lib AI ChatBot
+https://se-lib.org/ai/ai.html
+
 ## 💾 Installation
 
 From PyPI:
@@ -38,6 +41,7 @@ git clone https://github.com/se-lib/se-lib.git
 cd se-lib
 pip install .
 ```
+
 
 ## 📜 License and Version
 
