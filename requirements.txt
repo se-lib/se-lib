@@ -1,0 +1,6 @@
+matplotlib
+pandas
+graphviz
+pysd
+simpy
+ipython
