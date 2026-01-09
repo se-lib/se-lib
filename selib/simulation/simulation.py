@@ -624,7 +624,7 @@ class SystemDynamicsModel:
 
         graph = graphviz.Digraph(engine='dot', filename=filename, format=format)
         graph.attr("graph", pad=".5")
-        graph.attr(rankdir='LR', splines='spline', margin="1.5,0") #size='10,8'
+        graph.attr(rankdir='LR', splines='spline', margin="2.5,0") #size='10,8'
         graph.attr('node', fontname="arial", fontcolor='blue', color='invis', fontsize='10')
 
         with graph.subgraph(name='cluster_flowchain') as c:
