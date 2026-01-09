@@ -623,7 +623,7 @@ class SystemDynamicsModel:
         self.extract_flow_and_aux_dependencies()
 
         graph = graphviz.Digraph(engine='dot', filename=filename, format=format)
-        graph.attr("graph", pad="1")
+        graph.attr("graph", pad=".5")
         graph.attr(rankdir='LR', splines='spline', margin="1.5,0") #size='10,8'
         graph.attr('node', fontname="arial", fontcolor='blue', color='invis', fontsize='10')
 
@@ -1189,7 +1189,7 @@ class DiscreteEventModel:
                                 format=format,
                                 engine=engine)
         graph.attr(rankdir='LR', ranksep='.7')
-        graph.attr("graph", pad="1")
+        graph.attr("graph", pad=".5")
 
         for node_name in self.network:
             if self.network[node_name]['type'] == "source":
