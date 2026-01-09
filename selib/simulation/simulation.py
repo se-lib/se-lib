@@ -37,6 +37,16 @@ import numpy as np
 
 online = False
 
+# Prevent graphviz double-patching by storing original only once
+if not hasattr(graphviz, '_selib_original_digraph_init'):
+    graphviz._selib_original_digraph_init = graphviz.Digraph.__init__
+
+def _patched_digraph_init(self, *args, **kwargs):
+    graphviz._selib_original_digraph_init(self, *args, **kwargs)
+    self.attr('graph', pad='1')
+
+graphviz.Digraph.__init__ = _patched_digraph_init
+
 ########################### SYSTEM DYNAMICS MODELING ###########################
 
 class SystemDynamicsModel:
