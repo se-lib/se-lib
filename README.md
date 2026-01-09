@@ -47,7 +47,7 @@ pip install .
 
 **Version**: .43.0
 
-**Copyright**: 2022-2025 se-lib Development Team
+**Copyright**: 2022-2026 se-lib Development Team
 
 **License**: MIT
 
