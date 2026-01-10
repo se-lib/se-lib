@@ -17,6 +17,21 @@ Try se-lib instantly in a browser with no installation required:
 - [se-lib system dynamics modeling user's guide and examples](https://colab.research.google.com/github/se-lib/se-lib/blob/main/notebooks/se_lib_system_dynamics_modeling_users_guide_and_examples.ipynb) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/se-lib/se-lib/blob/main/notebooks/se_lib_system_dynamics_modeling_users_guide_and_examples.ipynb)
 - [se-lib discrete event modeling user's guide and examples](https://colab.research.google.com/github/se-lib/se-lib/blob/main/notebooks/se_lib_discrete_event_modeling_users_guide_and_examples.ipynb) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/se-lib/se-lib/blob/main/notebooks/se_lib_discrete_event_modeling_users_guide_and_examples.ipynb)
 
+<ul>
+  <li>
+    <a href="notebooks/se_lib_system_dynamics_modeling_users_guide_and_examples.ipynb">se-lib system dynamics modeling user's guide and examples</a>
+    <a href="https://colab.research.google.com/github/se-lib/se-lib/blob/main/notebooks/se_lib_system_dynamics_modeling_users_guide_and_examples.ipynb">
+      <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab" style="vertical-align: middle;">
+    </a>
+  </li>
+  <li>
+    <a href="notebooks/se_lib_discrete_event_modeling_users_guide_and_examples.ipynb">se-lib discrete event modeling user's guide and examples</a>
+    <a href="https://colab.research.google.com/github/se-lib/se-lib/blob/main/notebooks/se_lib_discrete_event_modeling_users_guide_and_examples.ipynb">
+      <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab" style="vertical-align: middle;">
+    </a>
+  </li>
+</ul>
+
 
 ## 📚 Online Manuals
 
