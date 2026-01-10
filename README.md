@@ -15,7 +15,9 @@ Try se-lib instantly in a browser with no installation required:
 
 - <img src="https://colab.research.google.com/img/colab_favicon_256px.png" alt="Colab" width="20"/> [se-lib examples](https://colab.research.google.com/drive/1J0Dnb2qmoMiuJWJTAsMQ5c3F6vjn4CzQ?usp=sharing)
 - <img src="https://colab.research.google.com/img/colab_favicon_256px.png" alt="Colab" width="20"/> [se-lib system dynamics modeling user's guide and examples]([[https://colab.research.google.com/drive/1oE5TBdF-hpJTQbQgSmPgmPoofBgOTR0B?usp=sharing](https://github.com/se-lib/se-lib/blob/3e6a9343c343d363c6c122f5ea1e2de3bbe77698/notebooks/se_lib_system_dynamics_modeling_users_guide_and_examples.ipynb](https://colab.research.google.com/github/se-lib/se-lib/blob/main/notebooks/se_lib_system_dynamics_modeling_users_guide_and_examples.ipynb)](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/se-lib/se-lib/blob/main/notebooks/se_lib_system_dynamics_modeling_users_guide_and_examples.ipynb))
--
+
+- <img src="https://colab.research.google.com/img/colab_favicon_256px.png" alt="Colab" width="20"/> [se-lib system dynamics modeling user's guide and examples]([https://colab.research.google.com/drive/1arDDaaltEyGLomaGo5ZKVumtviloUAyG?usp=sharing](https://colab.research.google.com/github/se-lib/se-lib/blob/main/notebooks/se_lib_discrete_event_modeling_users_guide_and_examples.ipynb)](https://colab.research.google.com/github/se-lib/se-lib/blob/main/notebooks/se_lib_system_dynamics_modeling_users_guide_and_examples.ipynb))
+
 - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/se-lib/se-lib/blob/main/notebooks/se_lib_system_dynamics_modeling_users_guide_and_examples.ipynb)
 
 - 
