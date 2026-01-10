@@ -15,7 +15,7 @@ Try se-lib instantly in a browser with no installation required:
 
 - <img src="https://colab.research.google.com/img/colab_favicon_256px.png" alt="Colab" width="20"/> [se-lib examples](https://colab.research.google.com/drive/1J0Dnb2qmoMiuJWJTAsMQ5c3F6vjn4CzQ?usp=sharing)
 - [se-lib system dynamics modeling user's guide and examples](https://colab.research.google.com/github/se-lib/se-lib/blob/main/notebooks/se_lib_system_dynamics_modeling_users_guide_and_examples.ipynb) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/se-lib/se-lib/blob/main/notebooks/se_lib_system_dynamics_modeling_users_guide_and_examples.ipynb)
-- [se-lib discrete event modeling user's guide and examples](https://colab.research.google.com/github/se-lib/se-lib/blob/main/notebooks/se_lib_discrete_event_modeling_users_guide_and_examples.ipynb) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]((https://colab.research.google.com/github/se-lib/se-lib/blob/main/notebooks/se_lib_discrete_event_modeling_users_guide_and_examples.ipynb)
+- [se-lib discrete event modeling user's guide and examples](https://colab.research.google.com/github/se-lib/se-lib/blob/main/notebooks/se_lib_discrete_event_modeling_users_guide_and_examples.ipynb) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/se-lib/se-lib/blob/main/notebooks/se_lib_discrete_event_modeling_users_guide_and_examples.ipynb)
 
 
 ## 📚 Online Manuals
