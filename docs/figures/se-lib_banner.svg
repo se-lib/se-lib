@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!--
+  se-lib banner (light header scheme to match updated CSS)
+  Canvas: 540 x 120 (viewBox 0 0 540 120)
+  Background: transparent (theme/CSS supplies header background, e.g., #F8FAFC)
+
+  Animation update (time-graph):
+    - The solid red curve and dashed blue curve are progressively revealed left-to-right
+      on a repeating 5 second cycle, emulating a simulation run.
+-->
+<svg xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="540pt" height="120pt"
+     viewBox="0 0 540 120"
+     version="1.1">
+
+  <g id="graph0" class="graph">
+    <title>G</title>
+
+    <!-- Background kept transparent; header background comes from CSS -->
+    <rect x="0" y="0" width="540" height="120" fill="none"/>
+
+    <defs>
+      <!-- Requirements tree (monochrome near-black). Arrowheads filled to match stroke. -->
+      <g id="requirements-tree" stroke="#111827" stroke-width="4" fill="#111827">
+        <g id="graph0_req" class="graph" transform="scale(1 .9) rotate(0) translate(4 112)">
+          <title>D</title>
+          <polygon fill="none" stroke="transparent" points="-4,4 -4,-112 202,-112 202,4 -4,4"/>
+
+          <g id="node1" class="node">
+            <title>a</title>
+            <polygon fill="none" points="126,-108 72,-108 72,-72 126,-72 126,-108"/>
+          </g>
+
+          <g id="node2" class="node">
+            <title>b</title>
+            <polygon fill="none" points="54,-36 0,-36 0,0 54,0 54,-36"/>
+          </g>
+
+          <g id="edge1" class="edge">
+            <title>a-&gt;b</title>
+            <path fill="none" d="M72,-78C55.3848,-78 39.0977,-78 27,-78 27,-78 27,-42.1686 27,-42.1686"/>
+            <polygon points="30.5001,-42.1687 27,-32.1686 23.5001,-42.1686 30.5001,-42.1687"/>
+          </g>
+
+          <g id="node3" class="node">
+            <title>c</title>
+            <polygon fill="none" points="126,-36 72,-36 72,0 126,0 126,-36"/>
+          </g>
+
+          <g id="edge2" class="edge">
+            <title>a-&gt;c</title>
+            <path fill="none" d="M99,-72C99,-72 99,-46.1686 99,-46.1686"/>
+            <polygon points="102.5001,-46.1687 99,-36.1686 95.5001,-46.1686 102.5001,-46.1687"/>
+          </g>
+
+          <g id="node4" class="node">
+            <title>d</title>
+            <polygon fill="none" points="198,-36 144,-36 144,0 198,0 198,-36"/>
+          </g>
+
+          <g id="edge3" class="edge">
+            <title>a-&gt;d</title>
+            <path fill="none" d="M126,-78C142.6152,-78 158.9023,-78 171,-78 171,-78 171,-42.1686 171,-42.1686"/>
+            <polygon points="174.5001,-42.1687 171,-32.1686 167.5001,-42.1686 174.5001,-42.1687"/>
+          </g>
+        </g>
+      </g>
+
+      <!-- Reveal clip for the time-based simulation curves (5 second repeating run) -->
+      <clipPath id="time-graph-reveal" clipPathUnits="userSpaceOnUse">
+        <!-- The rectangle "sweeps" across the curve region from x=35 to x≈200 -->
+        <rect x="35" y="14" width="0" height="88">
+          <animate attributeName="width"
+                   dur="5s"
+                   values="0;175"
+                   repeatCount="indefinite" />
+        </rect>
+      </clipPath>
+
+      <!-- Time-based graph icon (axes near-black; red Rayleigh; blue dashed S-curve) -->
+      <g id="time-graph" fill="none" stroke-width="5">
+        <!-- Axes -->
+        <line x1="35" y1="96" x2="200" y2="96" stroke="#111827" stroke-width="5.5"/>
+        <line x1="35" y1="96" x2="35"  y2="20" stroke="#111827" stroke-width="5.5"/>
+
+        <!-- Curves (revealed left-to-right via clipPath) -->
+        <g clip-path="url(#time-graph-reveal)">
+          <!-- Rayleigh-like intensity curve (solid red) -->
+          <path d="M 35 96
+                   C 60 86, 70 52, 97 34
+                   C 120 20, 143 44, 163 72
+                   C 177 90, 190 96, 200 96"
+                stroke="#DC2626"
+                stroke-linecap="round" stroke-linejoin="round"/>
+
+          <!-- Cumulative integral (S-curve, dashed blue) -->
+          <path d="M 35 96
+                   C 63 96, 75 94, 93 84
+                   C 113 72, 121 56, 131 44
+                   C 145 28, 165 22, 200 22"
+                stroke="#2563EB"
+                stroke-dasharray="8 6"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
+      </g>
+    </defs>
+
+    <!-- Icons scaled to 125 px wide: scale = 125/206 = 0.606796... -->
+    <g id="icon-left" transform="translate(2,2) scale(0.606796)">
+      <use href="#requirements-tree" xlink:href="#requirements-tree"/>
+    </g>
+
+    <g id="icon-right" transform="translate(413,2) scale(0.606796)">
+      <use href="#time-graph" xlink:href="#time-graph"/>
+    </g>
+
+    <!-- Title and subtitle (dark text for light header background) -->
+    <text id="title" x="270" y="62"
+          text-anchor="middle"
+          font-family="Arial,sans-serif"
+          font-weight="bold"
+          font-size="72"
+          fill="#0000cc">se-lib</text>
+
+    <text id="subtitle" x="270" y="110"
+          text-anchor="middle"
+          font-family="Arial,sans-serif"
+          font-weight="bold"
+          font-size="38"
+          fill="#0000cc">Systems Engineering Library</text>
+  </g>
+</svg>
