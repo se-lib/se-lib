@@ -28,6 +28,9 @@ These are HTML manual versions of the executable notebooks above.
 - 📖 [se-lib discrete event modeling users guide and examples](http://se-lib.org/manuals/discrete_event)
 
 ## se-lib AI ChatBot
+
+Try the se-lib customized chatbot.
+
 https://se-lib.org/ai/ai.html
 
 ## 💾 Installation
