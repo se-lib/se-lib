@@ -1,6 +1,8 @@
-# Systems Engineering Library (se-lib)
 
-Python toolkit for integrated systems modeling, continuous and discrete event simulation, model diagramming, reliability analysis, and project management modeling.
+<img src="https://github.com/se-lib/se-lib/blob/main/docs/figures/se-lib_banner.svg" alt="Systems Engineering Library (se-lib)" width="450"/>
+
+
+se-lib is a Python toolkit for integrated systems modeling, continuous and discrete event simulation, model diagramming, reliability analysis, and project management modeling.
 
 [![PyPI Version](https://img.shields.io/pypi/v/se-lib)](https://pypi.org/project/se-lib/)
 [![Python Versions](https://img.shields.io/pypi/pyversions/se-lib)](https://pypi.org/project/se-lib/)
