@@ -27,7 +27,7 @@ These are HTML manual versions of the executable notebooks above.
 - 📖 [se-lib system dynamics modeling users guide and examples](http://se-lib.org/manuals/system_dynamics/)
 - 📖 [se-lib discrete event modeling users guide and examples](http://se-lib.org/manuals/discrete_event)
 
-## AI ChatBot
+## AI Chatbot
 
 Try the se-lib customized AI chatbot.
 
