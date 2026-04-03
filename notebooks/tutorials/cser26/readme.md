@@ -1,4 +1,5 @@
 # to do
+- agent terminology
 - add general deployment diagram introducing custom gpts
 - add refinement for api schema and external tools
 - overview existing gpts in case audience wants further exploration
