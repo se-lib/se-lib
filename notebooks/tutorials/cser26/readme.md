@@ -3,6 +3,7 @@
 - add general deployment diagram introducing custom gpts
 - add refinement for api schema and external tools
 - overview existing gpts in case audience wants further exploration
+- instructions common elements purpose, interaction style, output format, etc. recommended in markdown structure (reusable across LLMs)
 - apis
   - fix gemini version
   
