@@ -7,5 +7,5 @@
 
 # BCSSE ARR 2026.
 
-Access the keynote notebook directly at https://colab.research.google.com/github/se-lib/se-lib/blob/main/notebooks/tutorials/BCSSE_ARR_2026_Keynote_Developing_and_Integrating_Custom_AI_Assistants_for_Systems_Engineering.ipynb
+Access the keynote notebook directly at https://colab.research.google.com/github/se-lib/se-lib/blob/main/notebooks/BCSSE_ARR_2026_Keynote_Developing_and_Integrating_Custom_AI_Assistants_for_Systems_Engineering.ipynb
 
