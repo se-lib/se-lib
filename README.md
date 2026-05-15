@@ -50,7 +50,7 @@ pip install .
 
 ## 📜 License and Version
 
-**Version**: .5.0
+**Version**: .51
 
 **Copyright**: 2022-2026 se-lib Development Team
 
