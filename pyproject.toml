@@ -9,7 +9,6 @@ authors = [
 ]
 description = "Systems Engineering Library (se-lib)"
 readme = "README.md"
-license = { file = "LICENSE" }
 requires-python = ">=3.7"
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -26,6 +25,10 @@ dependencies = [
 ]
 [tool.hatch.build.targets.wheel]
 packages = ["selib"]
+
+[tool.hatch.build]
+targets.sdist.include = ["LICENSE"]
+targets.wheel.shared-data = { "LICENSE" = "share/licenses/se-lib/LICENSE" }
 
 [project.urls]
 "Homepage" = "http://se-lib.org"
