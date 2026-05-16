@@ -1,0 +1,9 @@
+
+# macOS System Files
+.DS_Store
+**/.DS_Store
+
+# Python Build and Distribution Artifacts
+dist/
+build/
+*.egg-info/
