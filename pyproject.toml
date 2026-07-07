@@ -29,8 +29,5 @@ dependencies = [
 packages = ["selib"]
 shared-data = { "LICENSE" = "share/licenses/se-lib/LICENSE" }
 
-[tool.hatch.build.targets.sdist]
-include = ["LICENSE"]
-
 [project.urls]
 "Homepage" = "http://se-lib.org"
