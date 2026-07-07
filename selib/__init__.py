@@ -1,4 +1,4 @@
-__version__ = "0.42.0"
+__version__ = "0.53.0"
 from .simulation import (
     SystemDynamicsModel,
     init_sd_model,
