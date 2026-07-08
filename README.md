@@ -31,7 +31,7 @@ These are HTML manual versions of the executable notebooks above.
 
 Try the se-lib customized AI chatbot.
 
-https://se-lib.org/ai/ai.html
+https://se-lib.org/ai
 
 ## 💾 Installation
 
